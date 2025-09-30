@@ -78,11 +78,14 @@ function setupEventListeners() {
     
     // File input drag and drop
     setupFileDragAndDrop();
+    
+    // Multiple images handling
+    setupMultipleImages();
 }
 
 // Setup file drag and drop functionality
 function setupFileDragAndDrop() {
-    const fileInput = document.getElementById('imagen');
+    const fileInput = document.getElementById('imagenes');
     const uploadSection = document.getElementById('upload-section');
     
     if (!fileInput || !uploadSection) return;
@@ -104,9 +107,206 @@ function setupFileDragAndDrop() {
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             fileInput.files = files;
+            handleMultipleImages(files);
             hasUnsavedData = true;
         }
     });
+}
+
+// Setup multiple images functionality
+function setupMultipleImages() {
+    const fileInput = document.getElementById('imagenes');
+    if (!fileInput) return;
+    
+    fileInput.addEventListener('change', function(e) {
+        const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            handleMultipleImages(files);
+            hasUnsavedData = true;
+        }
+    });
+}
+
+// Handle multiple images selection
+function handleMultipleImages(files) {
+    const imagenesLista = document.getElementById('imagenes-lista');
+    const imagenesContainer = document.getElementById('imagenes-container');
+    
+    if (!imagenesLista || !imagenesContainer) return;
+    
+    // Clear previous images
+    imagenesContainer.innerHTML = '';
+    
+    // Show the list
+    imagenesLista.classList.remove('hidden');
+    
+    // Process each file
+    files.forEach((file, index) => {
+        const imageItem = createImageItem(file, index);
+        imagenesContainer.appendChild(imageItem);
+    });
+}
+
+// Create image item with controls
+function createImageItem(file, index) {
+    const div = document.createElement('div');
+    div.className = 'border border-gray-200 rounded-lg p-4 bg-gray-50';
+    div.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+                <div class="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden">
+                    <img id="preview-${index}" class="w-full h-full object-cover" alt="Preview">
+                </div>
+                <div>
+                    <h5 class="font-medium text-gray-900">${file.name}</h5>
+                    <p class="text-sm text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                </div>
+            </div>
+            <button type="button" onclick="removeImage(${index})" class="text-red-600 hover:text-red-800">
+                <i data-lucide="x" class="h-5 w-5"></i>
+            </button>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Hilera</label>
+                <input type="text" name="hilera_${index}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de hilera">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">N° Planta</label>
+                <input type="text" name="numero_planta_${index}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de planta">
+            </div>
+        </div>
+        
+        <div class="flex gap-2 mt-3">
+            <button type="button" onclick="previewImage(${index})" class="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                <i data-lucide="eye" class="h-4 w-4 inline mr-1"></i>
+                Ver Imagen
+            </button>
+            <button type="button" onclick="cropImage(${index})" class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
+                <i data-lucide="crop" class="h-4 w-4 inline mr-1"></i>
+                Recortar
+            </button>
+        </div>
+    `;
+    
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const preview = document.getElementById(`preview-${index}`);
+        if (preview) {
+            preview.src = e.target.result;
+        }
+    };
+    reader.readAsDataURL(file);
+    
+    return div;
+}
+
+// Remove image from list
+function removeImage(index) {
+    const fileInput = document.getElementById('imagenes');
+    const imagenesContainer = document.getElementById('imagenes-container');
+    
+    if (!fileInput || !imagenesContainer) return;
+    
+    // Remove from DOM
+    const imageItem = document.querySelector(`[onclick="removeImage(${index})"]`)?.closest('.border');
+    if (imageItem) {
+        imageItem.remove();
+    }
+    
+    // Update file input
+    const dt = new DataTransfer();
+    const files = Array.from(fileInput.files);
+    files.forEach((file, i) => {
+        if (i !== index) {
+            dt.items.add(file);
+        }
+    });
+    fileInput.files = dt.files;
+    
+    // Hide list if no images
+    if (fileInput.files.length === 0) {
+        document.getElementById('imagenes-lista').classList.add('hidden');
+    }
+    
+    hasUnsavedData = true;
+}
+
+// Preview image in modal
+function previewImage(index) {
+    const fileInput = document.getElementById('imagenes');
+    const file = fileInput.files[index];
+    
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        showImageModal(e.target.result, file.name);
+    };
+    reader.readAsDataURL(file);
+}
+
+// Crop image (placeholder function)
+function cropImage(index) {
+    const fileInput = document.getElementById('imagenes');
+    const file = fileInput.files[index];
+    
+    if (!file) return;
+    
+    // TODO: Implement crop functionality
+    showNotification('Funcionalidad de recorte en desarrollo', 'info');
+}
+
+// Show image modal
+function showImageModal(imageSrc, fileName) {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('imageModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'imageModal';
+        modal.className = 'fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50';
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-auto">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Vista previa de imagen</h3>
+                    <button onclick="closeImageModal()" class="text-gray-400 hover:text-gray-600">
+                        <i data-lucide="x" class="h-6 w-6"></i>
+                    </button>
+                </div>
+                <div class="text-center">
+                    <img id="modalImage" class="max-w-full h-auto rounded-lg border border-gray-200" alt="Preview">
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    // Set image
+    const modalImage = document.getElementById('modalImage');
+    if (modalImage) {
+        modalImage.src = imageSrc;
+        modalImage.alt = fileName;
+    }
+    
+    // Refresh icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+// Close image modal
+function closeImageModal() {
+    const modal = document.getElementById('imageModal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
 }
 
 // Load field data for dropdowns
@@ -256,10 +456,17 @@ function showUploadSection() {
 async function handleImageUpload(e) {
     e.preventDefault();
     
-    console.log('📸 Processing image upload...');
+    console.log('📸 Processing multiple images upload...');
     
     const formData = new FormData(e.target);
     const submitBtn = document.getElementById('submitBtn');
+    const fileInput = document.getElementById('imagenes');
+    
+    // Validate that images are selected
+    if (!fileInput.files || fileInput.files.length === 0) {
+        showNotification('Por favor selecciona al menos una imagen', 'warning');
+        return;
+    }
     
     // Show loading state
     if (submitBtn) {
@@ -268,29 +475,69 @@ async function handleImageUpload(e) {
     }
     
     try {
-        const response = await fetch('/api/procesar-imagen-simple', {
-            method: 'POST',
-            body: formData
-        });
+        // Process each image individually
+        const results = [];
+        const files = Array.from(fileInput.files);
         
-        const result = await response.json();
-        
-        if (result.success) {
-            console.log('✅ Image processed successfully:', result);
-            showAnalysisResult(result);
-            hasUnsavedData = false;
-            showNotification('Imagen procesada exitosamente', 'success');
-        } else {
-            throw new Error(result.detail || 'Error procesando imagen');
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const individualFormData = new FormData();
+            
+            // Add common fields
+            individualFormData.append('empresa', formData.get('empresa'));
+            individualFormData.append('fundo', formData.get('fundo'));
+            individualFormData.append('sector', formData.get('sector') || '');
+            individualFormData.append('lote', formData.get('lote') || '');
+            individualFormData.append('latitud', formData.get('latitud') || '');
+            individualFormData.append('longitud', formData.get('longitud') || '');
+            
+            // Add image-specific fields
+            individualFormData.append('imagen', file);
+            individualFormData.append('hilera', formData.get(`hilera_${i}`) || '');
+            individualFormData.append('numero_planta', formData.get(`numero_planta_${i}`) || '');
+            
+            console.log(`📸 Processing image ${i + 1}/${files.length}: ${file.name}`);
+            
+            const response = await fetch('/api/procesar-imagen-simple', {
+                method: 'POST',
+                body: individualFormData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                results.push({
+                    ...result,
+                    fileName: file.name,
+                    hilera: formData.get(`hilera_${i}`) || '',
+                    numero_planta: formData.get(`numero_planta_${i}`) || ''
+                });
+                console.log(`✅ Image ${i + 1} processed successfully`);
+            } else {
+                console.error(`❌ Error processing image ${i + 1}:`, result.detail);
+                results.push({
+                    success: false,
+                    fileName: file.name,
+                    error: result.detail || 'Error procesando imagen'
+                });
+            }
         }
+        
+        // Show results
+        showMultipleAnalysisResults(results);
+        hasUnsavedData = false;
+        
+        const successCount = results.filter(r => r.success).length;
+        showNotification(`${successCount}/${files.length} imágenes procesadas exitosamente`, 'success');
+        
     } catch (error) {
-        console.error('❌ Error processing image:', error);
-        showNotification('Error procesando imagen: ' + error.message, 'error');
+        console.error('❌ Error processing images:', error);
+        showNotification('Error procesando imágenes: ' + error.message, 'error');
     } finally {
         // Restore button
         if (submitBtn) {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i data-lucide="upload" class="h-5 w-5"></i><span>Analizar Imagen</span>';
+            submitBtn.innerHTML = '<i data-lucide="upload" class="h-5 w-5"></i><span>Analizar Imágenes</span>';
         }
     }
 }
@@ -315,6 +562,121 @@ function showAnalysisResult(result) {
                 <p><strong>Sector:</strong> ${result.sector || 'N/A'}</p>
                 <p><strong>Hilera:</strong> ${result.hilera || 'N/A'}</p>
                 ${result.latitud ? `<p><strong>Coordenadas:</strong> ${result.latitud}, ${result.longitud}</p>` : ''}
+            </div>
+        </div>
+    `;
+    
+    const analysisResults = document.getElementById('analysis-results');
+    const uploadSection = document.getElementById('upload-section');
+    const resultsSection = document.getElementById('results-section');
+    
+    if (analysisResults) analysisResults.innerHTML = resultsHtml;
+    if (uploadSection) uploadSection.classList.add('hidden');
+    if (resultsSection) resultsSection.classList.remove('hidden');
+    
+    // Refresh icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+// Show multiple analysis results
+function showMultipleAnalysisResults(results) {
+    const successResults = results.filter(r => r.success);
+    const errorResults = results.filter(r => !r.success);
+    
+    let resultsHtml = `
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Resultados del Análisis (${results.length} imágenes)</h3>
+    `;
+    
+    // Show success results
+    if (successResults.length > 0) {
+        resultsHtml += `
+            <div class="mb-6">
+                <h4 class="text-md font-medium text-green-700 mb-3">✅ Imágenes procesadas exitosamente (${successResults.length})</h4>
+                <div class="space-y-4">
+        `;
+        
+        successResults.forEach((result, index) => {
+            resultsHtml += `
+                <div class="border border-green-200 rounded-lg p-4 bg-green-50">
+                    <div class="flex items-center justify-between mb-3">
+                        <h5 class="font-medium text-green-900">${result.fileName}</h5>
+                        <span class="text-sm text-green-600">Imagen ${index + 1}</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600">${result.porcentaje_luz.toFixed(1)}%</div>
+                            <div class="text-sm text-gray-500">Luz</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-gray-600">${result.porcentaje_sombra.toFixed(1)}%</div>
+                            <div class="text-sm text-gray-500">Sombra</div>
+                        </div>
+                    </div>
+                    <div class="mt-3 text-sm text-gray-600">
+                        <p><strong>Fundo:</strong> ${result.fundo}</p>
+                        <p><strong>Sector:</strong> ${result.sector || 'N/A'}</p>
+                        <p><strong>Hilera:</strong> ${result.hilera || 'N/A'}</p>
+                        <p><strong>N° Planta:</strong> ${result.numero_planta || 'N/A'}</p>
+                        ${result.latitud ? `<p><strong>Coordenadas:</strong> ${result.latitud}, ${result.longitud}</p>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        resultsHtml += `
+                </div>
+            </div>
+        `;
+    }
+    
+    // Show error results
+    if (errorResults.length > 0) {
+        resultsHtml += `
+            <div class="mb-6">
+                <h4 class="text-md font-medium text-red-700 mb-3">❌ Errores en procesamiento (${errorResults.length})</h4>
+                <div class="space-y-2">
+        `;
+        
+        errorResults.forEach((result, index) => {
+            resultsHtml += `
+                <div class="border border-red-200 rounded-lg p-3 bg-red-50">
+                    <div class="flex items-center justify-between">
+                        <span class="font-medium text-red-900">${result.fileName}</span>
+                        <span class="text-sm text-red-600">Error ${index + 1}</span>
+                    </div>
+                    <p class="text-sm text-red-700 mt-1">${result.error}</p>
+                </div>
+            `;
+        });
+        
+        resultsHtml += `
+                </div>
+            </div>
+        `;
+    }
+    
+    // Summary
+    const avgLuz = successResults.length > 0 ? 
+        (successResults.reduce((sum, r) => sum + r.porcentaje_luz, 0) / successResults.length).toFixed(1) : 0;
+    const avgSombra = successResults.length > 0 ? 
+        (successResults.reduce((sum, r) => sum + r.porcentaje_sombra, 0) / successResults.length).toFixed(1) : 0;
+    
+    resultsHtml += `
+            <div class="border-t border-gray-200 pt-4">
+                <h4 class="text-md font-medium text-gray-900 mb-3">📊 Resumen General</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-blue-600">${avgLuz}%</div>
+                        <div class="text-sm text-gray-500">Promedio Luz</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-600">${avgSombra}%</div>
+                        <div class="text-sm text-gray-500">Promedio Sombra</div>
+                    </div>
+                </div>
             </div>
         </div>
     `;

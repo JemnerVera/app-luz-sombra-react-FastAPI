@@ -1,6 +1,0 @@
-{
-  "spreadsheet_id": "YOUR_SPREADSHEET_ID_HERE",
-  "credentials_file": "credentials.json",
-  "token_file": "token.json",
-  "sheet_name": "Data-app"
-}

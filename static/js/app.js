@@ -496,6 +496,15 @@ async function loadFieldData() {
         // Store all data globally for filtering
         window.fieldData = data;
         
+        // Debug: Log the hierarchical structure
+        console.log('📊 Field data loaded:', {
+            empresas: data.empresa?.length || 0,
+            fundos: data.fundo?.length || 0,
+            sectores: data.sector?.length || 0,
+            lotes: data.lote?.length || 0,
+            hierarchical: data.hierarchical ? Object.keys(data.hierarchical) : 'No hierarchical data'
+        });
+        
         // Only populate empresa initially
         if (data.empresa) {
             populateSelect('empresa', data.empresa);
@@ -620,27 +629,48 @@ function resetSelect(selectId, placeholder) {
 
 // Get fundos by empresa
 function getFundosByEmpresa(empresa) {
-    if (!window.fieldData || !window.fieldData.fundo) return [];
+    if (!window.fieldData || !window.fieldData.hierarchical || !window.fieldData.hierarchical[empresa]) {
+        console.log('🔍 No hierarchical data for empresa:', empresa);
+        return [];
+    }
     
-    // For now, return all fundos. In a real implementation, you'd filter by empresa
-    // This would require the API to return structured data with relationships
-    return window.fieldData.fundo;
+    // Return fundos for the selected empresa
+    const fundos = Object.keys(window.fieldData.hierarchical[empresa]);
+    console.log('🔍 Fundos for empresa', empresa, ':', fundos);
+    return fundos;
 }
 
 // Get sectores by empresa and fundo
 function getSectoresByEmpresaAndFundo(empresa, fundo) {
-    if (!window.fieldData || !window.fieldData.sector) return [];
+    if (!window.fieldData || 
+        !window.fieldData.hierarchical || 
+        !window.fieldData.hierarchical[empresa] || 
+        !window.fieldData.hierarchical[empresa][fundo]) {
+        console.log('🔍 No hierarchical data for empresa/fundo:', empresa, fundo);
+        return [];
+    }
     
-    // For now, return all sectores. In a real implementation, you'd filter by empresa and fundo
-    return window.fieldData.sector;
+    // Return sectores for the selected empresa and fundo
+    const sectores = Object.keys(window.fieldData.hierarchical[empresa][fundo]);
+    console.log('🔍 Sectores for empresa/fundo', empresa, fundo, ':', sectores);
+    return sectores;
 }
 
 // Get lotes by empresa, fundo and sector
 function getLotesByEmpresaFundoAndSector(empresa, fundo, sector) {
-    if (!window.fieldData || !window.fieldData.lote) return [];
+    if (!window.fieldData || 
+        !window.fieldData.hierarchical || 
+        !window.fieldData.hierarchical[empresa] || 
+        !window.fieldData.hierarchical[empresa][fundo] || 
+        !window.fieldData.hierarchical[empresa][fundo][sector]) {
+        console.log('🔍 No hierarchical data for empresa/fundo/sector:', empresa, fundo, sector);
+        return [];
+    }
     
-    // For now, return all lotes. In a real implementation, you'd filter by empresa, fundo and sector
-    return window.fieldData.lote;
+    // Return lotes for the selected empresa, fundo and sector
+    const lotes = window.fieldData.hierarchical[empresa][fundo][sector];
+    console.log('🔍 Lotes for empresa/fundo/sector', empresa, fundo, sector, ':', lotes);
+    return lotes;
 }
 
 // Change tab with unsaved data check

@@ -58,7 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ currentTab, onTabChange, children }) =>
         </nav>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+        <div className="mt-auto p-4 border-t border-gray-200">
           <div className="text-xs text-gray-500 text-center">
             © 2024 Agricola Luz-Sombra v2.0.0
             <br />

@@ -35,12 +35,18 @@ export const useImageUpload = () => {
         };
         
         newImages.push(imageFile);
-        
-        // Extract GPS in background
-        extractGpsFromImage(file)
+      }
+      
+      // Add all images first
+      setImages(prev => [...prev, ...newImages]);
+      
+      // Then extract GPS for each image
+      for (const imageFile of newImages) {
+        extractGpsFromImage(imageFile.file)
           .then((coordinates: GpsCoordinates | null) => {
+            console.log(`🔍 GPS extraction for ${imageFile.file.name}:`, coordinates ? 'Found' : 'Not found');
             setImages(prev => prev.map(img => 
-              img.file === file 
+              img.file === imageFile.file 
                 ? {
                     ...img,
                     gpsStatus: coordinates ? 'found' : 'not-found',
@@ -50,16 +56,14 @@ export const useImageUpload = () => {
             ));
           })
           .catch((error) => {
-            console.error('Error extracting GPS:', error);
+            console.error(`❌ Error extracting GPS for ${imageFile.file.name}:`, error);
             setImages(prev => prev.map(img => 
-              img.file === file 
+              img.file === imageFile.file 
                 ? { ...img, gpsStatus: 'not-found', coordinates: undefined }
                 : img
             ));
           });
       }
-      
-      setImages(prev => [...prev, ...newImages]);
     } catch (error) {
       console.error('Error adding images:', error);
     } finally {
@@ -69,6 +73,12 @@ export const useImageUpload = () => {
 
   const removeImage = useCallback((file: File) => {
     setImages(prev => prev.filter(img => img.file !== file));
+    
+    // Clear GPS cache for removed image
+    const cacheKey = `${file.name}_${file.size}_${file.lastModified}`;
+    if (typeof window !== 'undefined' && (window as any).gpsCache) {
+      (window as any).gpsCache.delete(cacheKey);
+    }
   }, []);
 
   const updateImageField = useCallback((file: File, field: 'hilera' | 'numero_planta', value: string) => {

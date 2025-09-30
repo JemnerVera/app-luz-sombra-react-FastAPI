@@ -11,31 +11,67 @@ export interface GpsCoordinates {
   lng: number;
 }
 
+// Cache para evitar extracciones duplicadas
+const gpsCache = new Map<string, GpsCoordinates | null>();
+
 export const extractGpsFromImage = (file: File): Promise<GpsCoordinates | null> => {
   return new Promise((resolve) => {
+    // Check cache first
+    const cacheKey = `${file.name}_${file.size}_${file.lastModified}`;
+    if (gpsCache.has(cacheKey)) {
+      const cached = gpsCache.get(cacheKey);
+      console.log(`📋 Using cached GPS data for ${file.name}:`, cached ? 'Found' : 'Not found');
+      resolve(cached || null);
+      return;
+    }
+
     // Check if EXIF.js is available
     if (typeof window.EXIF === 'undefined') {
-      console.warn('EXIF.js not loaded');
+      console.warn('EXIF.js not loaded for file:', file.name);
+      gpsCache.set(cacheKey, null);
       resolve(null);
       return;
     }
 
+    // Add timeout to prevent hanging
+    const timeout = setTimeout(() => {
+      console.warn('GPS extraction timeout for file:', file.name);
+      gpsCache.set(cacheKey, null);
+      resolve(null);
+    }, 5000); // 5 second timeout
+
     window.EXIF.getData(file, function(this: any) {
-      const lat = window.EXIF.getTag(this, "GPSLatitude");
-      const latRef = window.EXIF.getTag(this, "GPSLatitudeRef");
-      const lon = window.EXIF.getTag(this, "GPSLongitude");
-      const lonRef = window.EXIF.getTag(this, "GPSLongitudeRef");
+      clearTimeout(timeout);
       
-      if (lat && lon && latRef && lonRef) {
-        // Convert GPS coordinates to decimal degrees
-        const latDecimal = convertDMSToDD(lat, latRef);
-        const lonDecimal = convertDMSToDD(lon, lonRef);
+      try {
+        const lat = window.EXIF.getTag(this, "GPSLatitude");
+        const latRef = window.EXIF.getTag(this, "GPSLatitudeRef");
+        const lon = window.EXIF.getTag(this, "GPSLongitude");
+        const lonRef = window.EXIF.getTag(this, "GPSLongitudeRef");
         
-        resolve({
-          lat: latDecimal,
-          lng: lonDecimal
-        });
-      } else {
+        console.log(`🔍 EXIF data for ${file.name}:`, { lat, latRef, lon, lonRef });
+        
+        if (lat && lon && latRef && lonRef) {
+          // Convert GPS coordinates to decimal degrees
+          const latDecimal = convertDMSToDD(lat, latRef);
+          const lonDecimal = convertDMSToDD(lon, lonRef);
+          
+          const coordinates = {
+            lat: latDecimal,
+            lng: lonDecimal
+          };
+          
+          console.log(`✅ GPS coordinates for ${file.name}:`, coordinates);
+          gpsCache.set(cacheKey, coordinates);
+          resolve(coordinates);
+        } else {
+          console.log(`❌ No GPS data found for ${file.name}`);
+          gpsCache.set(cacheKey, null);
+          resolve(null);
+        }
+      } catch (error) {
+        console.error(`❌ Error processing EXIF for ${file.name}:`, error);
+        gpsCache.set(cacheKey, null);
         resolve(null);
       }
     });

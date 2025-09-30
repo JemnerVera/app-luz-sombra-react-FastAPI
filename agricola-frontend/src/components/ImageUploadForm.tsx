@@ -78,14 +78,35 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
     });
   };
 
-  const handleProcessImages = async () => {
+  const validateForm = () => {
+    // Validar campos obligatorios
     if (!formData.empresa || !formData.fundo) {
       onNotification('Por favor selecciona al menos Empresa y Fundo', 'warning');
-      return;
+      return false;
     }
 
     if (!hasImages()) {
       onNotification('Por favor selecciona al menos una imagen', 'warning');
+      return false;
+    }
+
+    // Validar que cada imagen tenga hilera y planta si no tiene GPS
+    for (const imageFile of images) {
+      const hasGps = imageFile.gpsStatus === 'found' && imageFile.coordinates;
+      const hasHilera = imageFile.hilera && imageFile.hilera.trim() !== '';
+      const hasPlanta = imageFile.numero_planta && imageFile.numero_planta.trim() !== '';
+
+      if (!hasGps && (!hasHilera || !hasPlanta)) {
+        onNotification(`La imagen ${imageFile.file.name} necesita Hilera y N° Planta ya que no tiene información GPS`, 'warning');
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleProcessImages = async () => {
+    if (!validateForm()) {
       return;
     }
 
@@ -137,12 +158,17 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
   const getGpsStatusDisplay = (imageFile: any) => {
     switch (imageFile.gpsStatus) {
       case 'extracting':
-        return <span className="text-gray-400 text-xs">Extrayendo GPS...</span>;
+        return (
+          <span className="text-gray-400 text-xs flex items-center">
+            <div className="animate-spin rounded-full h-3 w-3 border-b border-gray-400 mr-1"></div>
+            Extrayendo GPS...
+          </span>
+        );
       case 'found':
         return (
-          <span className="text-green-600 text-xs flex items-center">
+          <span className="text-green-600 text-xs flex items-center bg-green-50 px-2 py-1 rounded">
             <MapPin className="h-3 w-3 mr-1" />
-            {formatCoordinates(imageFile.coordinates)}
+            Con GPS: {formatCoordinates(imageFile.coordinates)}
           </span>
         );
       case 'not-found':
@@ -153,7 +179,12 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
           </span>
         );
       default:
-        return null;
+        return (
+          <span className="text-gray-400 text-xs flex items-center">
+            <div className="animate-spin rounded-full h-3 w-3 border-b border-gray-400 mr-1"></div>
+            Extrayendo GPS...
+          </span>
+        );
     }
   };
 
@@ -294,7 +325,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Seleccionar Archivos
+            {hasImages() ? 'Adicionar Archivos' : 'Seleccionar Archivos'}
           </button>
         </div>
 

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { ImageFile } from '../types';
 import { extractGpsFromImage, GpsCoordinates } from '../utils/exif';
 import { createImagePreview, validateImageFile } from '../utils/helpers';
+import { parseFilename } from '../utils/filenameParser';
 
 export const useImageUpload = () => {
   const [images, setImages] = useState<ImageFile[]>([]);
@@ -25,13 +26,16 @@ export const useImageUpload = () => {
         // Create preview
         const preview = await createImagePreview(file);
         
+        // Parse filename to extract hilera and planta
+        const parsedFilename = parseFilename(file.name);
+        
         // Create image object
         const imageFile: ImageFile = {
           file,
           preview,
           gpsStatus: 'extracting',
-          hilera: '',
-          numero_planta: '',
+          hilera: parsedFilename.hilera || '',
+          numero_planta: parsedFilename.planta || '',
         };
         
         newImages.push(imageFile);
@@ -93,6 +97,19 @@ export const useImageUpload = () => {
     setImages([]);
   }, []);
 
+  const replaceImage = useCallback((originalFile: File, newFile: File) => {
+    setImages(prev => prev.map(img => {
+      if (img.file === originalFile) {
+        return {
+          ...img,
+          file: newFile,
+          preview: URL.createObjectURL(newFile)
+        };
+      }
+      return img;
+    }));
+  }, []);
+
   const getImageCount = useCallback(() => {
     return images.length;
   }, [images]);
@@ -112,6 +129,7 @@ export const useImageUpload = () => {
     removeImage,
     updateImageField,
     clearImages,
+    replaceImage,
     getImageCount,
     hasImages,
     getValidImages,

@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
-import { UI_CONFIG } from '../utils/constants';
+// import { UI_CONFIG } from '../utils/constants';
 
 interface NotificationProps {
   show: boolean;

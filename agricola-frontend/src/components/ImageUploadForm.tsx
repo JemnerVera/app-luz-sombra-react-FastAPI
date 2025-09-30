@@ -5,6 +5,8 @@ import { apiService } from '../services/api';
 import { ProcessingResult } from '../types';
 import { formatFileSize, formatCoordinates } from '../utils/helpers';
 import { Upload, X, Eye, Crop, MapPin, AlertCircle } from 'lucide-react';
+import ImageViewModal from './ImageViewModal';
+import ImageCropModal from './ImageCropModal';
 
 interface ImageUploadFormProps {
   onUnsavedDataChange: (hasData: boolean) => void;
@@ -13,7 +15,7 @@ interface ImageUploadFormProps {
 
 const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, onNotification }) => {
   const { fieldData, loading: fieldLoading, getFundosByEmpresa, getSectoresByEmpresaAndFundo, getLotesByEmpresaFundoAndSector } = useFieldData();
-  const { images, addImages, removeImage, updateImageField, clearImages, hasImages } = useImageUpload();
+  const { images, addImages, removeImage, updateImageField, clearImages, replaceImage, hasImages } = useImageUpload();
   
   const [formData, setFormData] = useState({
     empresa: '',
@@ -24,6 +26,17 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
   
   const [processing, setProcessing] = useState(false);
   const [results, setResults] = useState<ProcessingResult[]>([]);
+  const [viewModal, setViewModal] = useState<{ isOpen: boolean; imageSrc: string; imageName: string }>({
+    isOpen: false,
+    imageSrc: '',
+    imageName: ''
+  });
+  const [cropModal, setCropModal] = useState<{ isOpen: boolean; imageSrc: string; imageName: string; originalFile: File }>({
+    isOpen: false,
+    imageSrc: '',
+    imageName: '',
+    originalFile: new File([], '')
+  });
 
   // Track unsaved data
   React.useEffect(() => {
@@ -154,6 +167,29 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
       setProcessing(false);
     }
   };
+
+  const handleViewImage = useCallback((imageFile: any) => {
+    setViewModal({
+      isOpen: true,
+      imageSrc: imageFile.preview,
+      imageName: imageFile.file.name
+    });
+  }, []);
+
+  const handleCropImage = useCallback((imageFile: any) => {
+    setCropModal({
+      isOpen: true,
+      imageSrc: imageFile.preview,
+      imageName: imageFile.file.name,
+      originalFile: imageFile.file
+    });
+  }, []);
+
+  const handleCropComplete = useCallback((croppedFile: File) => {
+    // Replace the original file with the cropped one
+    replaceImage(cropModal.originalFile, croppedFile);
+    onNotification('Imagen recortada exitosamente! La imagen recortada reemplazará a la original.', 'success');
+  }, [replaceImage, cropModal.originalFile, onNotification]);
 
   const getGpsStatusDisplay = (imageFile: any) => {
     switch (imageFile.gpsStatus) {
@@ -358,9 +394,16 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
                   
                   {/* File Info */}
                   <div className="xl:col-span-3">
-                    <p className="font-medium text-sm text-gray-900 truncate">
-                      {imageFile.file.name}
-                    </p>
+                    <div className="flex items-center space-x-2">
+                      <p className="font-medium text-sm text-gray-900 truncate">
+                        {imageFile.file.name}
+                      </p>
+                      {imageFile.file.name.includes('_cropped') && (
+                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          Recortada
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-gray-500">
                       {formatFileSize(imageFile.file.size)}
                     </p>
@@ -399,6 +442,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
                   <div className="xl:col-span-3 flex space-x-2">
                     <button
                       type="button"
+                      onClick={() => handleViewImage(imageFile)}
                       className="flex items-center px-2 py-1 text-xs text-blue-600 hover:text-blue-800"
                     >
                       <Eye className="h-3 w-3 mr-1" />
@@ -406,6 +450,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
                     </button>
                     <button
                       type="button"
+                      onClick={() => handleCropImage(imageFile)}
                       className="flex items-center px-2 py-1 text-xs text-green-600 hover:text-green-800"
                     >
                       <Crop className="h-3 w-3 mr-1" />
@@ -486,6 +531,23 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
           </div>
         </div>
       )}
+
+      {/* Image View Modal */}
+      <ImageViewModal
+        isOpen={viewModal.isOpen}
+        onClose={() => setViewModal(prev => ({ ...prev, isOpen: false }))}
+        imageSrc={viewModal.imageSrc}
+        imageName={viewModal.imageName}
+      />
+
+      {/* Image Crop Modal */}
+      <ImageCropModal
+        isOpen={cropModal.isOpen}
+        onClose={() => setCropModal(prev => ({ ...prev, isOpen: false }))}
+        onCrop={handleCropComplete}
+        imageSrc={cropModal.imageSrc}
+        imageName={cropModal.imageName}
+      />
     </div>
   );
 };

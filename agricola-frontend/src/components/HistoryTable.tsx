@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 import { HistoryRecord } from '../types';
 import { formatDate, exportToCSV } from '../utils/helpers';
-import { Download, RefreshCw, Search, Filter } from 'lucide-react';
+import { Download, RefreshCw, Search } from 'lucide-react';
 
 interface HistoryTableProps {
   onNotification: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;

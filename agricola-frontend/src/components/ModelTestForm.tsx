@@ -3,7 +3,7 @@ import { useFieldData } from '../hooks/useFieldData';
 import { apiService } from '../services/api';
 import { ProcessingResult } from '../types';
 import { formatFileSize } from '../utils/helpers';
-import { Upload, Eye, Download } from 'lucide-react';
+import { Upload, Eye } from 'lucide-react';
 
 interface ModelTestFormProps {
   onNotification: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;

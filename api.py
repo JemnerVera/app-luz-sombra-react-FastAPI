@@ -150,7 +150,7 @@ async def get_next_sequential_id() -> str:
 
 
 # Montar archivos estáticos
-app.mount("/static", StaticFiles(directory="static"), name="static")
+# app.mount("/static", StaticFiles(directory="static"), name="static")  # No necesario en versión React
 app.mount("/resultados", StaticFiles(directory="resultados"), name="resultados")
 
 
@@ -226,8 +226,8 @@ def guardar_en_google_sheets(registro_db, metadata=None):
             'hilera': registro_db.hilera or '',
             'latitud': str(registro_db.latitud) if registro_db.latitud else '',
             'longitud': str(registro_db.longitud) if registro_db.longitud else '',
-            'porcentaje_luz': str(round(registro_db.porcentaje_luz, 2)),
-            'porcentaje_sombra': str(round(registro_db.porcentaje_sombra, 2)),
+            'porcentaje_luz': round(registro_db.porcentaje_luz, 2),
+            'porcentaje_sombra': round(registro_db.porcentaje_sombra, 2),
             'dispositivo': metadata.get('dispositivo', '') if metadata else '',
             'software': metadata.get('software', '') if metadata else '',
             'direccion': metadata.get('direccion', '') if metadata else '',
@@ -510,8 +510,8 @@ async def procesar_imagen_simple(
                 'numero_planta': numero_planta if numero_planta is not None else '',
                 'latitud': str(latitud_final) if latitud_final else '',
                 'longitud': str(longitud_final) if longitud_final else '',
-                'porcentaje_luz': str(round(light_percentage, 2)),
-                'porcentaje_sombra': str(round(shadow_percentage, 2)),
+                'porcentaje_luz': round(light_percentage, 2),
+                'porcentaje_sombra': round(shadow_percentage, 2),
                 'dispositivo': str(metadata.get('dispositivo', '')) if metadata else '',
                 'software': str(metadata.get('software', '')) if metadata else '',
                 'direccion': str(metadata.get('direccion', '')) if metadata else '',
@@ -543,6 +543,80 @@ async def procesar_imagen_simple(
         
     except Exception as e:
         print(f"❌ Error general: {e}")
+        raise HTTPException(status_code=500, detail=f"Error procesando imagen: {str(e)}")
+
+@app.post("/api/test-model")
+async def test_model(
+    imagen: UploadFile = File(..., description="Imagen agrícola para probar el modelo"),
+    empresa: str = Form("TEST", description="Empresa (modo prueba)"),
+    fundo: str = Form("TEST", description="Fundo (modo prueba)"),
+    sector: str = Form("TEST", description="Sector (modo prueba)"),
+    lote: str = Form("TEST", description="Lote (modo prueba)"),
+    hilera: str = Form("TEST", description="Hilera (modo prueba)"),
+    numero_planta: str = Form("TEST", description="Número de planta (modo prueba)"),
+    latitud: Optional[float] = Form(None, description="Latitud"),
+    longitud: Optional[float] = Form(None, description="Longitud")
+):
+    """
+    Endpoint para probar el modelo sin guardar en Google Sheets
+    """
+    try:
+        print(f"🧪 Modo prueba - Procesando imagen: {imagen.filename}")
+        
+        # Validar archivo
+        if not imagen or not imagen.filename:
+            raise HTTPException(status_code=400, detail="No se proporcionó una imagen válida")
+        
+        # Leer imagen
+        imagen_bytes = await imagen.read()
+        
+        # Procesar imagen con el modelo
+        from src.services.procesamiento_service_v2 import ProcesamientoServiceV2
+        import cv2
+        import numpy as np
+        
+        service = ProcesamientoServiceV2()
+        
+        # Convertir bytes a imagen
+        nparr = np.frombuffer(imagen_bytes, np.uint8)
+        imagen_array = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        
+        if imagen_array is None:
+            raise HTTPException(status_code=400, detail="No se pudo decodificar la imagen")
+        
+        # Analizar imagen
+        light_percentage, shadow_percentage, processed_image = service.procesar_imagen_visual(imagen_array)
+        
+        # Generar nombre de archivo para la imagen procesada
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        original_name = imagen.filename.split('.')[0]
+        processed_filename = f"{original_name}_{timestamp}_procesada.jpg"
+        
+        # Guardar imagen procesada en la carpeta resultados
+        import os
+        resultados_dir = "resultados"
+        if not os.path.exists(resultados_dir):
+            os.makedirs(resultados_dir)
+        
+        processed_path = os.path.join(resultados_dir, processed_filename)
+        
+        # Guardar imagen procesada
+        cv2.imwrite(processed_path, processed_image)
+        print(f"💾 Imagen procesada guardada: {processed_path}")
+        
+        return {
+            "success": True,
+            "porcentaje_luz": round(light_percentage, 2),
+            "porcentaje_sombra": round(shadow_percentage, 2),
+            "image_name": processed_filename,
+            "fundo": fundo,
+            "sector": sector or "",
+            "hilera": hilera or "",
+            "mensaje": "Imagen procesada exitosamente en modo prueba"
+        }
+        
+    except Exception as e:
+        print(f"❌ Error en test-model: {e}")
         raise HTTPException(status_code=500, detail=f"Error procesando imagen: {str(e)}")
 
 @app.post("/api/procesar-imagen")
@@ -602,8 +676,8 @@ async def procesar_imagen(
                 'hilera': '',
                 'latitud': '',
                 'longitud': '',
-                'porcentaje_luz': str(round(resultado["porcentaje_luz"], 2)),
-                'porcentaje_sombra': str(round(resultado["porcentaje_sombra"], 2)),
+                'porcentaje_luz': round(resultado["porcentaje_luz"], 2),
+                'porcentaje_sombra': round(resultado["porcentaje_sombra"], 2),
                 'dispositivo': '',
                 'software': '',
                 'direccion': '',

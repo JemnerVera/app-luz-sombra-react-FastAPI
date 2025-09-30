@@ -1,16 +1,13 @@
 @echo off
 echo ========================================
-echo    BACKEND API - LUZ-SOMBRA
+echo   AGRICOLA LUZ-SOMBRA - BACKEND FASTAPI
 echo ========================================
 echo.
-
-echo Iniciando Backend (FastAPI)...
+echo [1/2] Activando entorno virtual...
+call venv\Scripts\activate.bat
 echo.
-echo API disponible en: http://localhost:8000
-echo Documentacion:     http://localhost:8000/docs
+echo [2/2] Iniciando FastAPI backend...
+echo 🚀 Backend: http://localhost:8000
+echo 📚 API Docs: http://localhost:8000/docs
 echo.
-
-cd /d %~dp0
-.\venv\Scripts\python.exe api.py
-
-pause
+venv\Scripts\python.exe -m uvicorn api:app --host 0.0.0.0 --port 8000 --reload

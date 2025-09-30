@@ -1,15 +1,18 @@
 @echo off
 echo ========================================
-echo    FRONTEND REACT - LUZ-SOMBRA
+echo   AGRICOLA LUZ-SOMBRA - FRONTEND REACT
 echo ========================================
 echo.
-
-echo Iniciando Frontend (React)...
+echo [1/2] Verificando directorio React...
+if not exist "agricola-frontend" (
+    echo ❌ Directorio agricola-frontend no encontrado
+    pause
+    exit /b 1
+)
+echo ✅ Proyecto React encontrado
 echo.
-echo Aplicacion disponible en: http://localhost:3000
+echo [2/2] Iniciando React frontend...
+cd agricola-frontend
+echo 🚀 Frontend: http://localhost:3000
 echo.
-
-cd /d %~dp0\frontend-react
 npm start
-
-pause

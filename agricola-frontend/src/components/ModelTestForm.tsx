@@ -71,19 +71,19 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
   };
 
   return (
-    <div className="p-6 bg-dark-800 rounded-xl shadow-2xl border border-dark-700 animate-fade-in">
-      <h2 className="text-2xl font-semibold text-white mb-6 font-display">Probar Modelo</h2>
-      <p className="text-dark-300 mb-6">
+    <div className="p-6 bg-white dark:bg-dark-800 rounded-xl shadow-2xl border border-gray-200 dark:border-dark-700 animate-fade-in">
+      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 font-display">Probar Modelo</h2>
+      <p className="text-gray-600 dark:text-dark-300 mb-6">
         Sube una imagen para probar el modelo de Machine Learning y ver las áreas de luz y sombra identificadas.
       </p>
       
       <div className="space-y-6">
         {/* Image Upload */}
         <div>
-          <label className="block text-sm font-medium text-dark-200 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-dark-200 mb-2">
             Seleccionar Imagen
           </label>
-          <div className="border-2 border-dashed border-dark-600 rounded-xl p-6 text-center hover:border-primary-400 hover:bg-dark-700 transition-all duration-200">
+          <div className="border-2 border-dashed border-gray-300 dark:border-dark-600 rounded-xl p-6 text-center hover:border-primary-400 hover:bg-gray-50 dark:hover:bg-dark-700 transition-all duration-200">
             <input
               type="file"
               accept="image/*"
@@ -144,18 +144,18 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
 
         {/* Results */}
         {result && (
-          <div className="mt-6 p-4 bg-dark-700 border border-accent-500 rounded-xl shadow-lg">
-            <h3 className="text-lg font-semibold text-white mb-3 font-display">Resultado del Análisis:</h3>
+          <div className="mt-6 p-4 bg-gray-50 dark:bg-dark-700 border border-accent-500 rounded-xl shadow-lg">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 font-display">Resultado del Análisis:</h3>
             {result.success ? (
-              <div className="text-accent-300">
-                <p className="text-sm font-mono bg-dark-800 p-3 rounded-lg border border-dark-600 text-white">
-                  {result.image_name ? result.image_name.split('.')[0] : 'imagen'} | 
-                  Luz: {result.porcentaje_luz?.toFixed(2)}% | 
+              <div className="text-accent-600 dark:text-accent-300">
+                <p className="text-sm font-mono bg-white dark:bg-dark-800 p-3 rounded-lg border border-gray-200 dark:border-dark-600 text-gray-900 dark:text-white">
+                  {result.image_name ? result.image_name.split('.')[0] : 'imagen'} |
+                  Luz: {result.porcentaje_luz?.toFixed(2)}% |
                   Sombra: {result.porcentaje_sombra?.toFixed(2)}%
                 </p>
               </div>
             ) : (
-              <p className="text-red-400">{result.error}</p>
+              <p className="text-red-600 dark:text-red-400">{result.error}</p>
             )}
           </div>
         )}
@@ -163,8 +163,8 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
         {/* Processed Image */}
         {processedImageUrl && (
           <div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Imagen Procesada (con áreas identificadas)</h3>
-            <div className="border rounded-lg p-4">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Imagen Procesada (con áreas identificadas)</h3>
+            <div className="border border-gray-200 dark:border-dark-600 rounded-lg p-4 bg-white dark:bg-dark-800">
               <img
                 src={processedImageUrl}
                 alt="Resultado del análisis"

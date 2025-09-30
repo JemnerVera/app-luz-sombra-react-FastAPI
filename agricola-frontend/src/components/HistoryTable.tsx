@@ -94,7 +94,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
     return (
       <div className="space-y-6">
         {/* Header Skeleton */}
-        <div className="bg-white p-6 rounded-lg shadow animate-pulse">
+        <div className="bg-white dark:bg-dark-800 p-6 rounded-lg shadow animate-pulse">
           <div className="flex justify-between items-center mb-4">
             <div className="h-6 bg-gray-200 rounded w-48"></div>
             <div className="flex space-x-3">
@@ -110,24 +110,24 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
         </div>
         
         {/* Table Skeleton */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="bg-white dark:bg-dark-800 rounded-lg shadow overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-600">
+              <thead className="bg-gray-50 dark:bg-dark-700">
                 <tr>
                   {Array.from({ length: 10 }).map((_, i) => (
                     <th key={i} className="px-6 py-3">
-                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      <div className="h-4 bg-gray-200 dark:bg-dark-600 rounded w-20"></div>
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-dark-800 divide-y divide-gray-200 dark:divide-dark-600">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
                     {Array.from({ length: 10 }).map((_, j) => (
                       <td key={j} className="px-6 py-4">
-                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-dark-600 rounded w-16"></div>
                       </td>
                     ))}
                   </tr>
@@ -142,10 +142,10 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
 
   if (error) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-white dark:bg-dark-800 p-6 rounded-lg shadow">
         <div className="text-center">
           <div className="text-red-500 text-lg font-medium mb-2">Error al cargar el historial</div>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className="text-gray-600 dark:text-dark-300 mb-4">{error}</p>
           <button
             onClick={loadHistory}
             className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -161,15 +161,15 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
-      <div className="bg-dark-800 p-6 rounded-xl shadow-2xl border border-dark-700">
+      <div className="bg-white dark:bg-dark-800 p-6 rounded-xl shadow-2xl border border-gray-200 dark:border-dark-700">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-white font-display">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white font-display">
             Historial de Procesamiento
           </h2>
           <div className="flex space-x-3">
             <button
               onClick={loadHistory}
-              className="inline-flex items-center px-3 py-2 border border-dark-600 text-sm font-medium rounded-lg text-dark-200 bg-dark-700 hover:bg-dark-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-dark-600 text-sm font-medium rounded-lg text-gray-700 dark:text-dark-200 bg-white dark:bg-dark-700 hover:bg-gray-50 dark:hover:bg-dark-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200"
             >
               <RefreshCw className="h-4 w-4 mr-2" />
               Actualizar
@@ -187,29 +187,29 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
         {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-dark-200 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-200 mb-1">
               Buscar
             </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-dark-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-dark-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Buscar en todos los campos..."
-                className="w-full pl-10 pr-3 py-2 border border-dark-600 rounded-lg bg-dark-700 text-white placeholder-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-dark-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-dark-200 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-200 mb-1">
               Empresa
             </label>
             <select
               value={filterEmpresa}
               onChange={(e) => setFilterEmpresa(e.target.value)}
-              className="w-full px-3 py-2 border border-dark-600 rounded-lg bg-dark-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
             >
               <option value="">Todas las empresas</option>
               {uniqueEmpresas.map((empresa) => (
@@ -221,13 +221,13 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-dark-200 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-dark-200 mb-1">
               Fundo
             </label>
             <select
               value={filterFundo}
               onChange={(e) => setFilterFundo(e.target.value)}
-              className="w-full px-3 py-2 border border-dark-600 rounded-lg bg-dark-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
             >
               <option value="">Todos los fundos</option>
               {uniqueFundos.map((fundo) => (
@@ -239,97 +239,97 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
           </div>
         </div>
 
-        <div className="mt-4 text-sm text-dark-300">
+        <div className="mt-4 text-sm text-gray-600 dark:text-dark-300">
           Mostrando {startIndex + 1}-{Math.min(endIndex, filteredHistory.length)} de {filteredHistory.length} registros (de {history.length} total)
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-dark-800 rounded-xl shadow-2xl border border-dark-700 overflow-hidden">
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-2xl border border-gray-200 dark:border-dark-700 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-dark-700">
-            <thead className="bg-dark-700">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-700">
+            <thead className="bg-gray-50 dark:bg-dark-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   Empresa
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   Fundo
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   Sector
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   Lote
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   Hilera
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   N° Planta
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   Luz %
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   Sombra %
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   Fecha
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-dark-300 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-dark-300 uppercase tracking-wider">
                   GPS
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-dark-800 divide-y divide-dark-700">
+            <tbody className="bg-white dark:bg-dark-800 divide-y divide-gray-200 dark:divide-dark-700">
               {paginatedHistory.length === 0 ? (
                 <tr>
-                  <td colSpan={10} className="px-6 py-4 text-center text-dark-400">
+                  <td colSpan={10} className="px-6 py-4 text-center text-gray-500 dark:text-dark-400">
                     No se encontraron registros
                   </td>
                 </tr>
               ) : (
                 paginatedHistory.map((record) => (
-                  <tr key={record.id} className="hover:bg-dark-700 transition-colors duration-200">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                  <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors duration-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                       {record.empresa}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-dark-200">
                       {record.fundo}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-dark-200">
                       {record.sector || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-dark-200">
                       {record.lote || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-dark-200">
                       {record.hilera || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-dark-200">
                       {record.numero_planta || '-'}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-200">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-dark-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border border-yellow-500/30">
                         {record.porcentaje_luz}%
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-200">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-dark-600 text-dark-300 border border-dark-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-dark-200">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 dark:bg-dark-600 text-gray-700 dark:text-dark-300 border border-gray-300 dark:border-dark-500">
                         {record.porcentaje_sombra}%
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-dark-200">
                       {formatDate(record.fecha_tomada)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-dark-200">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-dark-200">
                       {record.latitud && record.longitud ? (
-                        <span className="text-accent-400 text-xs">
+                        <span className="text-accent-600 dark:text-accent-400 text-xs">
                           {record.latitud.toFixed(4)}, {record.longitud.toFixed(4)}
                         </span>
                       ) : (
-                        <span className="text-red-400 text-xs">Sin GPS</span>
+                        <span className="text-red-600 dark:text-red-400 text-xs">Sin GPS</span>
                       )}
                     </td>
                   </tr>
@@ -342,28 +342,28 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
 
       {/* Paginación */}
       {totalPages > 1 && (
-        <div className="bg-dark-800 px-4 py-3 flex items-center justify-between border-t border-dark-700 sm:px-6 rounded-xl shadow-2xl border border-dark-700">
+        <div className="bg-white dark:bg-dark-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-dark-700 sm:px-6 rounded-xl shadow-2xl border border-gray-200 dark:border-dark-700">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="relative inline-flex items-center px-4 py-2 border border-dark-600 text-sm font-medium rounded-lg text-dark-200 bg-dark-700 hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-dark-600 text-sm font-medium rounded-lg text-gray-700 dark:text-dark-200 bg-white dark:bg-dark-700 hover:bg-gray-50 dark:hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               Anterior
             </button>
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="ml-3 relative inline-flex items-center px-4 py-2 border border-dark-600 text-sm font-medium rounded-lg text-dark-200 bg-dark-700 hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-dark-600 text-sm font-medium rounded-lg text-gray-700 dark:text-dark-200 bg-white dark:bg-dark-700 hover:bg-gray-50 dark:hover:bg-dark-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             >
               Siguiente
             </button>
           </div>
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm text-dark-300">
-                Página <span className="font-medium text-white">{currentPage}</span> de{' '}
-                <span className="font-medium text-white">{totalPages}</span>
+              <p className="text-sm text-gray-600 dark:text-dark-300">
+                Página <span className="font-medium text-gray-900 dark:text-white">{currentPage}</span> de{' '}
+                <span className="font-medium text-gray-900 dark:text-white">{totalPages}</span>
               </p>
             </div>
             <div>
@@ -371,7 +371,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-lg border border-dark-600 bg-dark-700 text-sm font-medium text-dark-300 hover:bg-dark-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-sm font-medium text-gray-700 dark:text-dark-300 hover:bg-gray-50 dark:hover:bg-dark-600 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   <ChevronLeft className="h-5 w-5" />
                 </button>
@@ -396,7 +396,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
                       className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium transition-all duration-200 ${
                         currentPage === pageNum
                           ? 'z-10 bg-primary-600 border-primary-500 text-white shadow-lg'
-                          : 'bg-dark-700 border-dark-600 text-dark-300 hover:bg-dark-600 hover:text-white'
+                          : 'bg-white dark:bg-dark-700 border-gray-300 dark:border-dark-600 text-gray-700 dark:text-dark-300 hover:bg-gray-50 dark:hover:bg-dark-600 hover:text-gray-900 dark:hover:text-white'
                       }`}
                     >
                       {pageNum}
@@ -407,7 +407,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                   disabled={currentPage === totalPages}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-lg border border-dark-600 bg-dark-700 text-sm font-medium text-dark-300 hover:bg-dark-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-lg border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-sm font-medium text-gray-700 dark:text-dark-300 hover:bg-gray-50 dark:hover:bg-dark-600 hover:text-gray-900 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                   <ChevronRight className="h-5 w-5" />
                 </button>

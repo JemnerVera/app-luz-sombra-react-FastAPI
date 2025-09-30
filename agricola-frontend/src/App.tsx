@@ -111,20 +111,20 @@ function App() {
       />
 
       {/* Modal de confirmación */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
-          <div className="bg-dark-800 rounded-xl p-6 max-w-md w-full mx-4 border border-dark-700 shadow-2xl animate-scale-in">
-            <div className="flex justify-center mb-4">
-              <div className="flex-shrink-0">
-                <svg className="h-8 w-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
+        {showModal && (
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 animate-fade-in">
+            <div className="bg-white dark:bg-dark-800 rounded-xl p-6 max-w-md w-full mx-4 border border-gray-200 dark:border-dark-700 shadow-2xl animate-scale-in">
+              <div className="flex justify-center mb-4">
+                <div className="flex-shrink-0">
+                  <svg className="h-8 w-8 text-yellow-500 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                  </svg>
+                </div>
               </div>
-            </div>
-            <p className="text-dark-300 mb-6 text-center">
-              Tienes información sin guardar en la pestaña "Analizar Imágenes". 
-              Si cambias de pestaña, se perderán los datos ingresados.
-            </p>
+              <p className="text-gray-600 dark:text-dark-300 mb-6 text-center">
+                Tienes información sin guardar en la pestaña "Analizar Imágenes".
+                Si cambias de pestaña, se perderán los datos ingresados.
+              </p>
             <div className="flex space-x-3 justify-center">
               <button
                 onClick={confirmTabChange}

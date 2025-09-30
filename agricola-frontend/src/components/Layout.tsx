@@ -24,9 +24,9 @@ const Layout: React.FC<LayoutProps> = ({ currentTab, onTabChange, children }) =>
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 flex flex-col lg:flex-row">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-lg">
+      <div className="w-full lg:w-64 bg-white shadow-lg flex-shrink-0">
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <h1 className="text-xl font-bold text-gray-900">
@@ -44,10 +44,10 @@ const Layout: React.FC<LayoutProps> = ({ currentTab, onTabChange, children }) =>
               <button
                 key={tab.id}
                 onClick={() => onTabChange(tab.id as TabType)}
-                className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg font-medium text-sm transition-colors ${
+                className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg font-medium text-sm transition-all duration-200 ${
                   currentTab === tab.id
-                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-500'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-500 shadow-sm'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:shadow-sm'
                 }`}
               >
                 {getIcon(tab.icon)}
@@ -68,8 +68,8 @@ const Layout: React.FC<LayoutProps> = ({ currentTab, onTabChange, children }) =>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        <main className="flex-1 p-6">
+      <div className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 p-4 lg:p-6 overflow-auto">
           {children}
         </main>
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 import { HistoryRecord } from '../types';
 import { formatDate, exportToCSV } from '../utils/helpers';
-import { Download, RefreshCw, Search } from 'lucide-react';
+import { Download, RefreshCw, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface HistoryTableProps {
   onNotification: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
@@ -15,6 +15,8 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEmpresa, setFilterEmpresa] = useState('');
   const [filterFundo, setFilterFundo] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const loadHistory = async () => {
     try {
@@ -57,30 +59,82 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
     }
   };
 
-  const filteredHistory = history.filter(record => {
-    const matchesSearch = 
-      record.empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.fundo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.lote.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.hilera.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      record.numero_planta.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredHistory = history
+    .filter(record => {
+      const matchesSearch = 
+        record.empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.fundo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.sector.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.lote.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.hilera.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        record.numero_planta.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesEmpresa = !filterEmpresa || record.empresa === filterEmpresa;
-    const matchesFundo = !filterFundo || record.fundo === filterFundo;
+      const matchesEmpresa = !filterEmpresa || record.empresa === filterEmpresa;
+      const matchesFundo = !filterFundo || record.fundo === filterFundo;
 
-    return matchesSearch && matchesEmpresa && matchesFundo;
-  });
+      return matchesSearch && matchesEmpresa && matchesFundo;
+    })
+    .sort((a, b) => parseInt(b.id) - parseInt(a.id)); // Ordenar por ID descendente (más recientes primero)
+
+  // Calcular paginación
+  const totalPages = Math.ceil(filteredHistory.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedHistory = filteredHistory.slice(startIndex, endIndex);
+
+  // Resetear página cuando cambien los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterEmpresa, filterFundo]);
 
   const uniqueEmpresas = [...new Set(history.map(record => record.empresa))];
   const uniqueFundos = [...new Set(history.map(record => record.fundo))];
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando historial...</p>
+      <div className="space-y-6">
+        {/* Header Skeleton */}
+        <div className="bg-white p-6 rounded-lg shadow animate-pulse">
+          <div className="flex justify-between items-center mb-4">
+            <div className="h-6 bg-gray-200 rounded w-48"></div>
+            <div className="flex space-x-3">
+              <div className="h-8 bg-gray-200 rounded w-24"></div>
+              <div className="h-8 bg-gray-200 rounded w-32"></div>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-gray-200 rounded"></div>
+          </div>
+        </div>
+        
+        {/* Table Skeleton */}
+        <div className="bg-white rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <th key={i} className="px-6 py-3">
+                      <div className="h-4 bg-gray-200 rounded w-20"></div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <tr key={i}>
+                    {Array.from({ length: 10 }).map((_, j) => (
+                      <td key={j} className="px-6 py-4">
+                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     );
@@ -186,7 +240,7 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
         </div>
 
         <div className="mt-4 text-sm text-gray-600">
-          Mostrando {filteredHistory.length} de {history.length} registros
+          Mostrando {startIndex + 1}-{Math.min(endIndex, filteredHistory.length)} de {filteredHistory.length} registros (de {history.length} total)
         </div>
       </div>
 
@@ -229,14 +283,14 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredHistory.length === 0 ? (
+              {paginatedHistory.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="px-6 py-4 text-center text-gray-500">
                     No se encontraron registros
                   </td>
                 </tr>
               ) : (
-                filteredHistory.map((record) => (
+                paginatedHistory.map((record) => (
                   <tr key={record.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {record.empresa}
@@ -285,6 +339,83 @@ const HistoryTable: React.FC<HistoryTableProps> = ({ onNotification }) => {
           </table>
         </div>
       </div>
+
+      {/* Paginación */}
+      {totalPages > 1 && (
+        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 rounded-lg shadow">
+          <div className="flex-1 flex justify-between sm:hidden">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Siguiente
+            </button>
+          </div>
+          <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Página <span className="font-medium">{currentPage}</span> de{' '}
+                <span className="font-medium">{totalPages}</span>
+              </p>
+            </div>
+            <div>
+              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </button>
+                
+                {/* Números de página */}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum: number;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => setCurrentPage(pageNum)}
+                      className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        currentPage === pageNum
+                          ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                          : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+                
+                <button
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  disabled={currentPage === totalPages}
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

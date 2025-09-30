@@ -6,7 +6,7 @@ const API_BASE_URL = config.apiUrl;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 30000,
+  timeout: 120000, // 2 minutes timeout for image processing
 });
 
 // Request interceptor
@@ -56,6 +56,16 @@ export const apiService = {
     return response.data;
   },
 
+  // Test model (for testing tab)
+  testModel: async (formData: FormData): Promise<ProcessingResult> => {
+    const response = await api.post('/api/test-model', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
   // Process multiple images
   processMultipleImages: async (images: FormData[]): Promise<ProcessingResult[]> => {
     const promises = images.map(formData => apiService.processImage(formData));
@@ -79,16 +89,6 @@ export const apiService = {
   // Get statistics
   getStatistics: async (): Promise<ApiResponse<any>> => {
     const response = await api.get('/api/estadisticas');
-    return response.data;
-  },
-
-  // Test model with visual output
-  testModel: async (formData: FormData): Promise<ProcessingResult> => {
-    const response = await api.post('/api/procesar-imagen-visual', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
     return response.data;
   },
 

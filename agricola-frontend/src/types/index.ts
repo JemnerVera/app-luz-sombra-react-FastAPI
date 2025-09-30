@@ -30,16 +30,18 @@ export interface ImageFile {
 
 export interface ProcessingResult {
   success: boolean;
-  fileName: string;
+  fileName?: string;
+  image_name?: string;
   hilera?: string;
   numero_planta?: string;
-  porcentaje_luz: number;
-  porcentaje_sombra: number;
-  fundo: string;
+  porcentaje_luz?: number;
+  porcentaje_sombra?: number;
+  fundo?: string;
   sector?: string;
   latitud?: number;
   longitud?: number;
   error?: string;
+  message?: string;
 }
 
 export interface HistoryRecord {

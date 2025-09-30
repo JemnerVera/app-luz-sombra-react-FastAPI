@@ -226,10 +226,28 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
 
   if (fieldLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando datos de campo...</p>
+      <div className="space-y-6">
+        {/* Form Skeleton */}
+        <div className="bg-white p-6 rounded-lg shadow animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-32 mb-4"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i}>
+                <div className="h-4 bg-gray-200 rounded w-20 mb-2"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        {/* Upload Area Skeleton */}
+        <div className="bg-white p-6 rounded-lg shadow animate-pulse">
+          <div className="h-6 bg-gray-200 rounded w-40 mb-4"></div>
+          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <div className="h-12 w-12 bg-gray-200 rounded mx-auto mb-4"></div>
+            <div className="h-4 bg-gray-200 rounded w-48 mx-auto mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded w-32 mx-auto"></div>
+          </div>
         </div>
       </div>
     );
@@ -335,14 +353,14 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
         
         {/* Upload Area */}
         <div
-          className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors cursor-pointer"
+          className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer group"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => document.getElementById('file-input')?.click()}
         >
-          <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-lg font-medium text-gray-900 mb-2">
+          <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4 group-hover:text-blue-500 transition-colors" />
+          <p className="text-lg font-medium text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">
             Arrastra imágenes aquí o haz clic para seleccionar
           </p>
           <p className="text-sm text-gray-500 mb-4">
@@ -477,7 +495,7 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
         <button
           onClick={handleProcessImages}
           disabled={processing || !hasImages() || !formData.empresa || !formData.fundo}
-          className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-400 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white transition-all duration-200 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:transform-none"
         >
           {processing ? (
             <>

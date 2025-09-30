@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Análisis Luz-Sombra{% endblock %}</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="min-h-screen bg-background flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-white border-r border-gray-200 h-screen fixed left-0 top-0 p-6">
+            <div class="space-y-6">
+                <!-- Logo/Title -->
+                <div class="text-center">
+                    <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                        Análisis Luz-Sombra
+                    </h1>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="space-y-2">
+                    <button
+                        id="nav-analizar"
+                        class="nav-button w-full justify-start gap-3 h-12 px-4 py-2 rounded-md text-left transition-colors"
+                        onclick="changeTab('analizar')"
+                    >
+                        <i data-lucide="upload" class="h-5 w-5"></i>
+                        Analizar Imágenes
+                    </button>
+                    
+                    <button
+                        id="nav-historial"
+                        class="nav-button w-full justify-start gap-3 h-12 px-4 py-2 rounded-md text-left transition-colors"
+                        onclick="changeTab('historial')"
+                    >
+                        <i data-lucide="history" class="h-5 w-5"></i>
+                        Historial
+                    </button>
+                    
+                    <button
+                        id="nav-probar"
+                        class="nav-button w-full justify-start gap-3 h-12 px-4 py-2 rounded-md text-left transition-colors"
+                        onclick="changeTab('probar')"
+                    >
+                        <i data-lucide="eye" class="h-5 w-5"></i>
+                        Probar Modelo
+                    </button>
+                </nav>
+
+                <!-- Stats -->
+                <div class="pt-6 border-t border-gray-200">
+                    <div class="flex items-center gap-2 text-sm text-gray-500">
+                        <i data-lucide="bar-chart-3" class="h-4 w-4"></i>
+                        <span>Sistema Activo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 ml-64 p-8">
+            <div class="max-w-6xl mx-auto">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmación -->
+    <div id="tabChangeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div class="space-y-6">
+                <div class="text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-amber-100 mb-4">
+                        <i data-lucide="alert-triangle" class="h-6 w-6 text-amber-600"></i>
+                    </div>
+                    <p class="text-sm text-gray-600">
+                        Tienes información sin guardar en la pestaña "Analizar Imágenes". 
+                        Si cambias de pestaña, se perderán los datos ingresados.
+                    </p>
+                </div>
+                
+                <div class="flex justify-center space-x-4">
+                    <button 
+                        id="confirmTabChange"
+                        class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
+                    >
+                        Aceptar
+                    </button>
+                    <button 
+                        id="cancelTabChange"
+                        class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="{{ url_for('static', path='/js/app.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+    
+    <!-- Initialize Lucide icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

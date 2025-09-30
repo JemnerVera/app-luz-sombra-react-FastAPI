@@ -1,0 +1,614 @@
+{% extends "base.html" %}
+
+{% block title %}Análisis Luz-Sombra - Inicio{% endblock %}
+
+{% block content %}
+<!-- Tab Content -->
+<div id="analizar-tab" class="tab-content">
+    <div class="space-y-8">
+        <!-- Header -->
+        <div class="text-center space-y-4">
+            <h2 class="text-4xl font-bold text-gray-900">Análisis de Imágenes</h2>
+        </div>
+
+        <!-- Upload Section -->
+        <div id="upload-section" class="border-2 border-dashed border-gray-300 rounded-lg p-6">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                    <i data-lucide="upload" class="h-6 w-6 text-blue-600"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Subir Imagen</h3>
+                <p class="text-gray-500 mb-6">Selecciona una imagen agrícola para analizar</p>
+                
+                <!-- Form de subida -->
+                <form id="uploadForm" enctype="multipart/form-data" class="space-y-6">
+                    <!-- Campos de ubicación -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="empresa" class="block text-sm font-medium text-gray-700 mb-2">Empresa *</label>
+                            <select id="empresa" name="empresa" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Seleccionar empresa...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="fundo" class="block text-sm font-medium text-gray-700 mb-2">Fundo *</label>
+                            <select id="fundo" name="fundo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Seleccionar fundo...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="sector" class="block text-sm font-medium text-gray-700 mb-2">Sector</label>
+                            <select id="sector" name="sector" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Seleccionar sector...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="lote" class="block text-sm font-medium text-gray-700 mb-2">Lote</label>
+                            <select id="lote" name="lote" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">Seleccionar lote...</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="hilera" class="block text-sm font-medium text-gray-700 mb-2">Hilera</label>
+                            <input type="text" id="hilera" name="hilera" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de hilera">
+                        </div>
+                        <div>
+                            <label for="numero_planta" class="block text-sm font-medium text-gray-700 mb-2">N° Planta</label>
+                            <input type="text" id="numero_planta" name="numero_planta" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de planta">
+                        </div>
+                    </div>
+
+                    <!-- Coordenadas GPS -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="latitud" class="block text-sm font-medium text-gray-700 mb-2">Latitud</label>
+                            <input type="number" id="latitud" name="latitud" step="any" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: -33.4489">
+                        </div>
+                        <div>
+                            <label for="longitud" class="block text-sm font-medium text-gray-700 mb-2">Longitud</label>
+                            <input type="number" id="longitud" name="longitud" step="any" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: -70.6693">
+                        </div>
+                    </div>
+
+                    <!-- Input de archivo -->
+                    <div>
+                        <label for="imagen" class="block text-sm font-medium text-gray-700 mb-2">Imagen *</label>
+                        <input type="file" id="imagen" name="imagen" accept="image/*" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <!-- Botón de envío -->
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="upload" class="h-5 w-5"></i>
+                        <span>Analizar Imagen</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Section (hidden initially) -->
+        <div id="results-section" class="hidden space-y-6">
+            <div class="flex justify-center">
+                <button 
+                    id="newUploadBtn"
+                    class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                >
+                    <i data-lucide="upload" class="h-4 w-4"></i>
+                    Subir Nuevas Imágenes
+                </button>
+            </div>
+            <div id="analysis-results"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Historial Tab -->
+<div id="historial-tab" class="tab-content hidden">
+    <div class="space-y-8">
+        <!-- Header -->
+        <div class="text-center space-y-4">
+            <h2 class="text-4xl font-bold text-gray-900">Historial de Procesamientos</h2>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-center gap-4">
+            <button 
+                id="refreshHistorialBtn"
+                class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            >
+                <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+                <span>Actualizar Historial</span>
+            </button>
+            
+            <button 
+                id="exportCsvBtn"
+                class="hidden flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            >
+                <i data-lucide="download" class="h-4 w-4"></i>
+                <span>Exportar CSV</span>
+            </button>
+        </div>
+
+        <!-- Historial Table -->
+        <div class="bg-white rounded-lg border border-gray-200">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900 flex items-center gap-2">
+                    <i data-lucide="bar-chart-3" class="h-5 w-5"></i>
+                    Historial
+                </h3>
+            </div>
+            <div class="p-6">
+                <div id="historial-content">
+                    <!-- Contenido del historial se carga aquí -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Probar Modelo Tab -->
+<div id="probar-tab" class="tab-content hidden">
+    <div class="space-y-8">
+        <!-- Header -->
+        <div class="text-center space-y-4">
+            <h2 class="text-4xl font-bold text-gray-900">Probar Modelo</h2>
+        </div>
+
+        <!-- Test Form -->
+        <div class="bg-white rounded-lg border border-gray-200 p-6">
+            <form id="testForm" enctype="multipart/form-data" class="space-y-6">
+                <div>
+                    <label for="test_imagen" class="block text-sm font-medium text-gray-700 mb-2">Imagen de Prueba</label>
+                    <input type="file" id="test_imagen" name="imagen" accept="image/*" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="test_empresa" class="block text-sm font-medium text-gray-700 mb-2">Empresa</label>
+                        <input type="text" id="test_empresa" name="empresa" value="Test Modelo" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="test_fundo" class="block text-sm font-medium text-gray-700 mb-2">Fundo</label>
+                        <input type="text" id="test_fundo" name="fundo" value="Test Modelo" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-md transition-colors flex items-center justify-center gap-2">
+                    <i data-lucide="eye" class="h-5 w-5"></i>
+                    <span>Probar Modelo</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Test Results -->
+        <div id="test-results" class="hidden">
+            <!-- Resultados de prueba se muestran aquí -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Variables globales
+    let currentTab = 'analizar';
+    let hasUnsavedData = false;
+    let pendingTab = null;
+    let historialData = [];
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', function() {
+        loadFieldData();
+        setupEventListeners();
+        updateNavigation();
+    });
+
+    // Cargar datos de campo para los dropdowns
+    async function loadFieldData() {
+        try {
+            const response = await fetch('/api/google-sheets/field-data');
+            const data = await response.json();
+            
+            if (data.empresa) {
+                populateSelect('empresa', data.empresa);
+            }
+            if (data.fundo) {
+                populateSelect('fundo', data.fundo);
+            }
+            if (data.sector) {
+                populateSelect('sector', data.sector);
+            }
+            if (data.lote) {
+                populateSelect('lote', data.lote);
+            }
+        } catch (error) {
+            console.error('Error cargando datos de campo:', error);
+        }
+    }
+
+    function populateSelect(selectId, options) {
+        const select = document.getElementById(selectId);
+        if (select) {
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option;
+                optionElement.textContent = option;
+                select.appendChild(optionElement);
+            });
+        }
+    }
+
+    // Configurar event listeners
+    function setupEventListeners() {
+        // Form de análisis
+        document.getElementById('uploadForm').addEventListener('submit', handleImageUpload);
+        
+        // Form de prueba
+        document.getElementById('testForm').addEventListener('submit', handleModelTest);
+        
+        // Botones de navegación
+        document.getElementById('newUploadBtn').addEventListener('click', showUploadSection);
+        document.getElementById('refreshHistorialBtn').addEventListener('click', loadHistorial);
+        document.getElementById('exportCsvBtn').addEventListener('click', exportHistorial);
+        
+        // Modal de confirmación
+        document.getElementById('confirmTabChange').addEventListener('click', confirmTabChange);
+        document.getElementById('cancelTabChange').addEventListener('click', cancelTabChange);
+        
+        // Detectar cambios en formularios
+        document.getElementById('uploadForm').addEventListener('change', () => {
+            hasUnsavedData = true;
+        });
+    }
+
+    // Cambiar pestaña
+    function changeTab(tab) {
+        if (hasUnsavedData && currentTab === 'analizar') {
+            pendingTab = tab;
+            showTabChangeModal();
+        } else {
+            setActiveTab(tab);
+        }
+    }
+
+    function setActiveTab(tab) {
+        currentTab = tab;
+        
+        // Ocultar todos los tabs
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+        
+        // Mostrar tab activo
+        document.getElementById(tab + '-tab').classList.remove('hidden');
+        
+        // Actualizar navegación
+        updateNavigation();
+        
+        // Cargar datos específicos del tab
+        if (tab === 'historial') {
+            loadHistorial();
+        }
+        
+        hasUnsavedData = false;
+    }
+
+    function updateNavigation() {
+        document.querySelectorAll('.nav-button').forEach(btn => {
+            btn.classList.remove('bg-blue-600', 'text-white');
+            btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+        });
+        
+        const activeBtn = document.getElementById('nav-' + currentTab);
+        if (activeBtn) {
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+            activeBtn.classList.remove('text-gray-700', 'hover:bg-gray-100');
+        }
+    }
+
+    // Modal de confirmación
+    function showTabChangeModal() {
+        document.getElementById('tabChangeModal').classList.remove('hidden');
+        document.getElementById('tabChangeModal').classList.add('flex');
+    }
+
+    function confirmTabChange() {
+        if (pendingTab) {
+            setActiveTab(pendingTab);
+        }
+        hideTabChangeModal();
+    }
+
+    function cancelTabChange() {
+        hideTabChangeModal();
+    }
+
+    function hideTabChangeModal() {
+        document.getElementById('tabChangeModal').classList.add('hidden');
+        document.getElementById('tabChangeModal').classList.remove('flex');
+        pendingTab = null;
+    }
+
+    // Mostrar sección de upload
+    function showUploadSection() {
+        document.getElementById('upload-section').classList.remove('hidden');
+        document.getElementById('results-section').classList.add('hidden');
+        document.getElementById('analysis-results').innerHTML = '';
+    }
+
+    // Manejar subida de imagen
+    async function handleImageUpload(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Mostrar loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i><span>Analizando...</span>';
+        
+        try {
+            const response = await fetch('/api/procesar-imagen-simple', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showAnalysisResult(result);
+                hasUnsavedData = false;
+            } else {
+                throw new Error(result.detail || 'Error procesando imagen');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error procesando imagen: ' + error.message);
+        } finally {
+            // Restaurar botón
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i data-lucide="upload" class="h-5 w-5"></i><span>Analizar Imagen</span>';
+        }
+    }
+
+    // Mostrar resultado de análisis
+    function showAnalysisResult(result) {
+        const resultsHtml = `
+            <div class="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Resultado del Análisis</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600">${result.porcentaje_luz.toFixed(1)}%</div>
+                        <div class="text-sm text-gray-500">Luz</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-gray-600">${result.porcentaje_sombra.toFixed(1)}%</div>
+                        <div class="text-sm text-gray-500">Sombra</div>
+                    </div>
+                </div>
+                <div class="mt-4 text-sm text-gray-600">
+                    <p><strong>Fundo:</strong> ${result.fundo}</p>
+                    <p><strong>Sector:</strong> ${result.sector || 'N/A'}</p>
+                    <p><strong>Hilera:</strong> ${result.hilera || 'N/A'}</p>
+                    ${result.latitud ? `<p><strong>Coordenadas:</strong> ${result.latitud}, ${result.longitud}</p>` : ''}
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('analysis-results').innerHTML = resultsHtml;
+        document.getElementById('upload-section').classList.add('hidden');
+        document.getElementById('results-section').classList.remove('hidden');
+        
+        // Recargar iconos
+        lucide.createIcons();
+    }
+
+    // Manejar prueba de modelo
+    async function handleModelTest(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(e.target);
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        
+        // Mostrar loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i><span>Probando...</span>';
+        
+        try {
+            const response = await fetch('/api/procesar-imagen-visual', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showTestResult(result);
+            } else {
+                throw new Error(result.detail || 'Error probando modelo');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error probando modelo: ' + error.message);
+        } finally {
+            // Restaurar botón
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i data-lucide="eye" class="h-5 w-5"></i><span>Probar Modelo</span>';
+        }
+    }
+
+    // Mostrar resultado de prueba
+    function showTestResult(result) {
+        const resultsHtml = `
+            <div class="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Resultado de la Prueba</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-green-600">${result.porcentaje_luz.toFixed(1)}%</div>
+                        <div class="text-sm text-gray-500">Luz</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-gray-600">${result.porcentaje_sombra.toFixed(1)}%</div>
+                        <div class="text-sm text-gray-500">Sombra</div>
+                    </div>
+                </div>
+                ${result.imagen_visual ? `
+                    <div class="mt-6">
+                        <h4 class="text-md font-medium text-gray-900 mb-2">Visualización del Análisis</h4>
+                        <img src="${result.imagen_visual}" alt="Análisis visual" class="max-w-full h-auto rounded-lg border border-gray-200">
+                    </div>
+                ` : ''}
+            </div>
+        `;
+        
+        document.getElementById('test-results').innerHTML = resultsHtml;
+        document.getElementById('test-results').classList.remove('hidden');
+        
+        // Recargar iconos
+        lucide.createIcons();
+    }
+
+    // Cargar historial
+    async function loadHistorial() {
+        const refreshBtn = document.getElementById('refreshHistorialBtn');
+        refreshBtn.disabled = true;
+        refreshBtn.innerHTML = '<i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i><span>Cargando...</span>';
+        
+        try {
+            const response = await fetch('/api/historial');
+            const data = await response.json();
+            
+            if (data.success) {
+                historialData = data.procesamientos;
+                displayHistorial(historialData);
+                document.getElementById('exportCsvBtn').classList.remove('hidden');
+            } else {
+                throw new Error(data.detail || 'Error cargando historial');
+            }
+        } catch (error) {
+            console.error('Error cargando historial:', error);
+            alert('Error cargando el historial');
+        } finally {
+            refreshBtn.disabled = false;
+            refreshBtn.innerHTML = '<i data-lucide="refresh-cw" class="h-4 w-4"></i><span>Actualizar Historial</span>';
+        }
+    }
+
+    // Mostrar historial
+    function displayHistorial(data) {
+        if (data.length === 0) {
+            document.getElementById('historial-content').innerHTML = `
+                <div class="text-center py-12">
+                    <i data-lucide="bar-chart-3" class="h-12 w-12 text-gray-400 mx-auto mb-4"></i>
+                    <h3 class="text-lg font-medium text-gray-500 mb-2">No hay procesamientos guardados</h3>
+                    <p class="text-gray-400">Sube y analiza imágenes para ver el historial aquí</p>
+                </div>
+            `;
+        } else {
+            const tableHtml = `
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-2 px-2 font-medium w-12">ID</th>
+                                <th class="text-left py-2 px-2 font-medium w-20">Empresa</th>
+                                <th class="text-left py-2 px-2 font-medium w-24">Fundo</th>
+                                <th class="text-left py-2 px-2 font-medium w-16">Sector</th>
+                                <th class="text-left py-2 px-2 font-medium w-16">Lote</th>
+                                <th class="text-left py-2 px-2 font-medium w-12">Hilera</th>
+                                <th class="text-left py-2 px-2 font-medium w-16">N° Planta</th>
+                                <th class="text-right py-2 px-2 font-medium w-16">Luz (%)</th>
+                                <th class="text-right py-2 px-2 font-medium w-16">Sombra (%)</th>
+                                <th class="text-left py-2 px-2 font-medium w-20">Latitud</th>
+                                <th class="text-left py-2 px-2 font-medium w-20">Longitud</th>
+                                <th class="text-left py-2 px-2 font-medium w-28">Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(item => `
+                                <tr class="border-b hover:bg-gray-50 transition-colors">
+                                    <td class="py-2 px-2 font-mono text-xs">${item.id}</td>
+                                    <td class="py-2 px-2 font-medium text-xs truncate max-w-20" title="${item.empresa || 'N/A'}">
+                                        ${item.empresa || 'N/A'}
+                                    </td>
+                                    <td class="py-2 px-2 font-medium text-xs truncate max-w-24" title="${item.fundo}">
+                                        ${item.fundo}
+                                    </td>
+                                    <td class="py-2 px-2 font-medium text-xs truncate max-w-16" title="${item.sector || 'N/A'}">
+                                        ${item.sector || 'N/A'}
+                                    </td>
+                                    <td class="py-2 px-2 font-medium text-xs truncate max-w-16" title="${item.lote || 'N/A'}">
+                                        ${item.lote || 'N/A'}
+                                    </td>
+                                    <td class="py-2 px-2 font-medium text-xs text-center">
+                                        ${item.hilera || 'N/A'}
+                                    </td>
+                                    <td class="py-2 px-2 font-medium text-xs text-center">
+                                        ${item.numero_planta || 'N/A'}
+                                    </td>
+                                    <td class="py-2 px-2 text-right font-medium text-xs text-green-600">
+                                        ${item.porcentaje_luz.toFixed(1)}%
+                                    </td>
+                                    <td class="py-2 px-2 text-right font-medium text-xs text-gray-600">
+                                        ${item.porcentaje_sombra.toFixed(1)}%
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-500 text-xs">
+                                        ${item.latitud ? item.latitud.toFixed(4) : 'N/A'}
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-500 text-xs">
+                                        ${item.longitud ? item.longitud.toFixed(4) : 'N/A'}
+                                    </td>
+                                    <td class="py-2 px-2 text-gray-500 text-xs">
+                                        ${new Date(item.timestamp).toLocaleDateString('es-ES', {
+                                            day: '2-digit',
+                                            month: '2-digit',
+                                            year: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit'
+                                        })}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('historial-content').innerHTML = tableHtml;
+        }
+        
+        // Recargar iconos
+        lucide.createIcons();
+    }
+
+    // Exportar historial a CSV
+    function exportHistorial() {
+        if (historialData.length === 0) return;
+        
+        const csvContent = [
+            ['ID', 'Empresa', 'Fundo', 'Sector', 'Lote', 'Hilera', 'N° Planta', 'Luz (%)', 'Sombra (%)', 'Fecha Tomada', 'Latitud', 'Longitud', 'Fecha Procesamiento'].join(','),
+            ...historialData.map(item => [
+                item.id,
+                `"${item.empresa || ''}"`,
+                `"${item.fundo}"`,
+                `"${item.sector || ''}"`,
+                `"${item.lote || ''}"`,
+                `"${item.hilera || ''}"`,
+                `"${item.numero_planta || ''}"`,
+                item.porcentaje_luz.toFixed(2),
+                item.porcentaje_sombra.toFixed(2),
+                item.fecha_tomada ? `"${new Date(item.fecha_tomada).toLocaleString()}"` : '""',
+                item.latitud || '',
+                item.longitud || '',
+                `"${new Date(item.timestamp).toLocaleString()}"`
+            ].join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `historial_luz_sombra_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+</script>
+{% endblock %}

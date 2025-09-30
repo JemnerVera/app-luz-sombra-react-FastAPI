@@ -1,7 +1,8 @@
-from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Depends
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi import FastAPI, File, UploadFile, Form, HTTPException, Depends, Request
+from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import Optional
 import json
@@ -60,9 +61,17 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Configurar templates
+templates = Jinja2Templates(directory="templates")
+
+# Ruta principal - servir la aplicación web
+@app.get("/", response_class=HTMLResponse)
+async def root(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
+
 # Ruta de salud para Railway
-@app.get("/")
-async def root():
+@app.get("/health")
+async def health():
     return {"message": "API Agrícola Luz-Sombra funcionando correctamente", "status": "healthy"}
 
 # Configurar CORS
@@ -81,7 +90,12 @@ app.add_middleware(
 procesamiento_service = ProcesamientoServiceV2()
 
 # Inicializar cliente de Google Sheets
-sheets_client = GoogleSheetsClient()
+try:
+    sheets_client = GoogleSheetsClient()
+    print("✅ Google Sheets client inicializado")
+except Exception as e:
+    print(f"⚠️ Error inicializando Google Sheets client: {e}")
+    sheets_client = None
 
 async def get_next_sequential_id() -> str:
     """
@@ -97,7 +111,7 @@ async def get_next_sequential_id() -> str:
             return "1"  # Si no hay configuración, empezar con 1
         
         # Autenticar con Google Sheets
-        if not sheets_client.authenticate():
+        if not sheets_client or not sheets_client.authenticate():
             return "1"  # Si no se puede autenticar, empezar con 1
         
         # Obtener registros existentes
@@ -136,7 +150,8 @@ async def get_next_sequential_id() -> str:
 
 
 # Montar archivos estáticos
-app.mount("/static", StaticFiles(directory="resultados"), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/resultados", StaticFiles(directory="resultados"), name="resultados")
 
 
 def guardar_en_google_sheets_directo(record_data):
@@ -159,7 +174,7 @@ def guardar_en_google_sheets_directo(record_data):
             return False
         
         # Autenticar con Google Sheets
-        if not sheets_client.authenticate():
+        if not sheets_client or not sheets_client.authenticate():
             print("❌ Error autenticando con Google Sheets")
             return False
         
@@ -196,7 +211,7 @@ def guardar_en_google_sheets(registro_db, metadata=None):
             return False
         
         # Autenticar con Google Sheets
-        if not sheets_client.authenticate():
+        if not sheets_client or not sheets_client.authenticate():
             print("❌ Error autenticando con Google Sheets")
             return False
         
@@ -235,14 +250,14 @@ def guardar_en_google_sheets(registro_db, metadata=None):
         return False
 
 
-@app.get("/health")
+@app.get("/api/health")
 async def health_check():
     """
     Endpoint de salud de la API
     """
     return {"status": "healthy", "timestamp": datetime.now()}
 
-@app.get("/historial")
+@app.get("/api/historial")
 async def obtener_historial():
     """
     Obtiene el historial de procesamientos guardados en Google Sheets
@@ -308,7 +323,7 @@ async def obtener_historial():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error obteniendo historial: {str(e)}")
 
-@app.get("/estadisticas")
+@app.get("/api/estadisticas")
 async def obtener_estadisticas():
     """
     Obtiene estadísticas generales de los procesamientos desde Google Sheets
@@ -367,7 +382,7 @@ async def obtener_estadisticas():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error obteniendo estadísticas: {str(e)}")
 
-@app.post("/procesar-imagen-simple")
+@app.post("/api/procesar-imagen-simple")
 async def procesar_imagen_simple(
     imagen: UploadFile = File(..., description="Imagen agrícola (JPG, PNG)"),
     empresa: str = Form(..., description="Empresa"),
@@ -530,7 +545,7 @@ async def procesar_imagen_simple(
         print(f"❌ Error general: {e}")
         raise HTTPException(status_code=500, detail=f"Error procesando imagen: {str(e)}")
 
-@app.post("/procesar-imagen")
+@app.post("/api/procesar-imagen")
 async def procesar_imagen(
     imagen: UploadFile = File(..., description="Imagen agrícola (JPG, PNG)"),
     anotaciones: UploadFile = File(..., description="Archivo JSON con anotaciones LabelMe"),
@@ -622,7 +637,7 @@ async def procesar_imagen(
 
 # Función de historial duplicada - usar la que está arriba
 
-@app.get("/imagen-resultado/{procesamiento_id}")
+@app.get("/api/imagen-resultado/{procesamiento_id}")
 async def obtener_imagen_resultado(procesamiento_id: int):
     """
     Obtiene la imagen resultado de un procesamiento específico
@@ -634,7 +649,7 @@ async def obtener_imagen_resultado(procesamiento_id: int):
 
 
 
-@app.get("/google-sheets/status")
+@app.get("/api/google-sheets/status")
 async def google_sheets_status():
     """
     Verifica el estado de la conexión con Google Sheets
@@ -659,7 +674,7 @@ async def google_sheets_status():
             "message": f"Error: {str(e)}"
         }
 
-@app.get("/google-sheets/records")
+@app.get("/api/google-sheets/records")
 async def google_sheets_records(limit: int = 10):
     """
     Obtiene registros de Google Sheets
@@ -690,7 +705,7 @@ async def google_sheets_records(limit: int = 10):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error obteniendo registros: {str(e)}")
 
-@app.get("/google-sheets/url")
+@app.get("/api/google-sheets/url")
 async def google_sheets_url():
     """
     Obtiene la URL de la hoja de cálculo de Google Sheets
@@ -713,7 +728,7 @@ async def google_sheets_url():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error obteniendo URL: {str(e)}")
 
-@app.post("/check-gps-info")
+@app.post("/api/check-gps-info")
 async def check_gps_info(file: UploadFile = File(...)):
     """
     Verifica si una imagen tiene información GPS en los metadatos EXIF
@@ -751,7 +766,7 @@ async def check_gps_info(file: UploadFile = File(...)):
             "message": f"Error verificando GPS: {str(e)}"
         }
 
-@app.get("/google-sheets/field-data")
+@app.get("/api/google-sheets/field-data")
 async def get_field_data():
     """
     Obtiene los datos de la hoja 'Data-campo' para los dropdowns con relaciones jerárquicas
@@ -842,7 +857,7 @@ async def get_field_data():
         print(f"❌ Error obteniendo datos de campo: {e}")
         raise HTTPException(status_code=500, detail=f"Error obteniendo datos de campo: {str(e)}")
 
-@app.post("/google-sheets/update-headers")
+@app.post("/api/google-sheets/update-headers")
 async def update_headers():
     """
     Fuerza la actualización de los encabezados de la hoja Data-app
@@ -872,7 +887,7 @@ async def update_headers():
         raise HTTPException(status_code=500, detail=f"Error actualizando encabezados: {str(e)}")
 
 
-@app.post("/procesar-imagen-visual")
+@app.post("/api/procesar-imagen-visual")
 async def procesar_imagen_visual(
     imagen: UploadFile = File(...),
     empresa: str = Form(""),

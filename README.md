@@ -1,6 +1,6 @@
 # 🌱 AGRICOLA LUZ-SOMBRA SUPERVISADO
 
-Aplicación web para análisis de luz y sombra en imágenes agrícolas usando Machine Learning.
+Aplicación web monolítica para análisis de luz y sombra en imágenes agrícolas usando Machine Learning con FastAPI.
 
 ## 🚀 Inicio Rápido
 
@@ -12,46 +12,84 @@ Aplicación web para análisis de luz y sombra en imágenes agrícolas usando Ma
 ### Para usuarios experimentados:
 1. **Instalar dependencias**:
    ```bash
-   # Backend
+   # Crear entorno virtual
    python -m venv venv
    venv\Scripts\activate
-   pip install -r requirements.txt
    
-   # Frontend
-   cd frontend-react
-   npm install
+   # Instalar dependencias
+   pip install -r requirements.txt
    ```
 
-2. **Ejecutar**: `start_app.bat`
+2. **Ejecutar aplicación**:
+   ```bash
+   python start_simple.py
+   ```
 
 ## 📋 Requisitos
 - **Python 3.11+**
-- **Node.js 18+**
 - **Git**
 
 ## 🌐 URLs
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8000
-- **Documentación API**: http://localhost:8000/docs
+- **Aplicación Web**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
 
 ## 📁 Estructura
 ```
-├── api.py                          # Backend FastAPI
+├── api.py                          # Aplicación FastAPI principal
 ├── requirements.txt                # Dependencias Python
-├── setup_completo.bat             # Setup automático
-├── start_app.bat                  # Script de inicio
-├── frontend-react/                # Frontend React
-└── src/                          # Código Python
+├── templates/                      # Templates HTML (Jinja2)
+│   ├── base.html                  # Template base
+│   └── index.html                 # Página principal
+├── static/                        # Archivos estáticos
+│   ├── css/style.css              # Estilos CSS
+│   ├── js/app.js                  # JavaScript principal
+│   └── images/                    # Imágenes
+├── src/                          # Código Python (ML, servicios)
+├── modelo_perfeccionado.pkl       # Modelo ML entrenado
+└── start_simple.py               # Script de inicio
 ```
 
 ## ⚙️ Configuración
-1. Copiar `google_sheets_config.example.json` a `google_sheets_config.json`
-2. Editar con tus credenciales de Google Sheets
+1. Crear `google_sheets_config.json` con tus credenciales de Google Sheets
+2. Configurar variables de entorno para deployment
+
+## 🚀 Deployment
+
+### Railway (Recomendado)
+1. Conectar repositorio a Railway
+2. Configurar variables de entorno
+3. Deploy automático
+
+### Render
+1. Crear Web Service en Render
+2. Conectar repositorio
+3. Configurar variables de entorno
+
+Ver `DEPLOYMENT_GUIDE.md` para instrucciones detalladas.
+
+## 🧪 Testing
+```bash
+# Probar aplicación
+python test_app.py
+
+# Probar componentes básicos
+python test_minimal.py
+```
 
 ## 🆘 Problemas Comunes
 - **Python no encontrado**: Instalar desde python.org
-- **Node.js no encontrado**: Instalar desde nodejs.org
-- **Dependencias faltantes**: Ejecutar `setup_completo.bat`
+- **Dependencias faltantes**: Ejecutar `pip install -r requirements.txt`
+- **Modelo no encontrado**: Verificar que `modelo_perfeccionado.pkl` existe
+- **Google Sheets error**: Verificar configuración en `google_sheets_config.json`
 
 ## 📖 Documentación Completa
-Ver `SETUP_COMPLETO.md` para instrucciones detalladas.
+- `SETUP_COMPLETO.md` - Instrucciones detalladas de setup
+- `DEPLOYMENT_GUIDE.md` - Guía de deployment
+- `api.py` - Código fuente principal
+
+## 🔄 Migración Completada
+✅ **Frontend React** → **HTML + JavaScript vanilla**  
+✅ **Dos servicios separados** → **Un solo servicio FastAPI**  
+✅ **Deployment complejo** → **Deployment simple**  
+✅ **Mismo rendimiento ML** → **Mantiene toda la funcionalidad**

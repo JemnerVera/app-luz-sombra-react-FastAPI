@@ -254,21 +254,21 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       {/* Form Fields */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Datos del Campo</h2>
+      <div className="bg-dark-800 p-6 rounded-xl shadow-2xl border border-dark-700">
+        <h2 className="text-lg font-semibold text-white mb-4 font-display">Datos del Campo</h2>
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Empresa */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dark-200 mb-1">
               Empresa *
             </label>
             <select
               value={formData.empresa}
               onChange={(e) => handleFieldChange('empresa', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-dark-600 rounded-lg bg-dark-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200"
             >
               <option value="">Seleccionar empresa...</option>
               {fieldData?.empresa?.map((empresa) => (
@@ -281,14 +281,14 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
 
           {/* Fundo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dark-200 mb-1">
               Fundo *
             </label>
             <select
               value={formData.fundo}
               onChange={(e) => handleFieldChange('fundo', e.target.value)}
               disabled={!formData.empresa}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-dark-600 rounded-lg bg-dark-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-dark-600 disabled:cursor-not-allowed transition-all duration-200"
             >
               <option value="">
                 {formData.empresa ? 'Seleccionar fundo...' : 'Primero selecciona una empresa'}
@@ -303,14 +303,14 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
 
           {/* Sector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dark-200 mb-1">
               Sector
             </label>
             <select
               value={formData.sector}
               onChange={(e) => handleFieldChange('sector', e.target.value)}
               disabled={!formData.fundo}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-dark-600 rounded-lg bg-dark-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-dark-600 disabled:cursor-not-allowed transition-all duration-200"
             >
               <option value="">
                 {formData.fundo ? 'Seleccionar sector...' : 'Primero selecciona un fundo'}
@@ -325,14 +325,14 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
 
           {/* Lote */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-dark-200 mb-1">
               Lote
             </label>
             <select
               value={formData.lote}
               onChange={(e) => handleFieldChange('lote', e.target.value)}
               disabled={!formData.sector}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              className="w-full px-3 py-2 border border-dark-600 rounded-lg bg-dark-700 text-white focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:bg-dark-600 disabled:cursor-not-allowed transition-all duration-200"
             >
               <option value="">
                 {formData.sector ? 'Seleccionar lote...' : 'Primero selecciona un sector'}
@@ -348,22 +348,22 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
       </div>
 
       {/* Image Upload */}
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Imágenes</h2>
+      <div className="bg-dark-800 p-6 rounded-xl shadow-2xl border border-dark-700">
+        <h2 className="text-lg font-semibold text-white mb-4 font-display">Imágenes</h2>
         
         {/* Upload Area */}
         <div
-          className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer group"
+          className="border-2 border-dashed border-dark-600 rounded-xl p-8 text-center hover:border-primary-400 hover:bg-dark-700 transition-all duration-200 cursor-pointer group"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => document.getElementById('file-input')?.click()}
         >
-          <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4 group-hover:text-blue-500 transition-colors" />
-          <p className="text-lg font-medium text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">
+          <Upload className="h-12 w-12 text-dark-400 mx-auto mb-4 group-hover:text-primary-500 transition-colors" />
+          <p className="text-lg font-medium text-white mb-2 group-hover:text-primary-300 transition-colors">
             Arrastra imágenes aquí o haz clic para seleccionar
           </p>
-          <p className="text-sm text-gray-500 mb-4">
+          <p className="text-sm text-dark-400 mb-4">
             JPG, PNG, WebP hasta 10MB cada una
           </p>
           <input
@@ -491,11 +491,11 @@ const ImageUploadForm: React.FC<ImageUploadFormProps> = ({ onUnsavedDataChange, 
       </div>
 
       {/* Process Button */}
-      <div className="bg-white p-6 rounded-lg shadow">
+      <div className="bg-dark-800 p-6 rounded-xl shadow-2xl border border-dark-700">
         <button
           onClick={handleProcessImages}
           disabled={processing || !hasImages() || !formData.empresa || !formData.fundo}
-          className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white transition-all duration-200 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed shadow-md hover:shadow-lg transform hover:-translate-y-0.5 disabled:transform-none"
+          className="w-full flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-xl text-white transition-all duration-200 bg-gradient-to-r from-accent-600 to-accent-700 hover:from-accent-700 hover:to-accent-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500 disabled:bg-dark-600 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:transform-none"
         >
           {processing ? (
             <>

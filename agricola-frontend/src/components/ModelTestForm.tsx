@@ -71,19 +71,19 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">Probar Modelo</h2>
-      <p className="text-gray-600 mb-6">
+    <div className="p-6 bg-dark-800 rounded-xl shadow-2xl border border-dark-700 animate-fade-in">
+      <h2 className="text-2xl font-semibold text-white mb-6 font-display">Probar Modelo</h2>
+      <p className="text-dark-300 mb-6">
         Sube una imagen para probar el modelo de Machine Learning y ver las áreas de luz y sombra identificadas.
       </p>
       
       <div className="space-y-6">
         {/* Image Upload */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-dark-200 mb-2">
             Seleccionar Imagen
           </label>
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+          <div className="border-2 border-dashed border-dark-600 rounded-xl p-6 text-center hover:border-primary-400 hover:bg-dark-700 transition-all duration-200">
             <input
               type="file"
               accept="image/*"
@@ -93,14 +93,14 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
             />
             <label
               htmlFor="file-upload"
-              className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+              className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
             >
               <Upload className="h-4 w-4 mr-2" />
               Seleccionar Imagen
             </label>
             {selectedFile && (
               <div className="mt-4">
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-dark-300">
                   {selectedFile.name} ({formatFileSize(selectedFile.size)})
                 </p>
               </div>
@@ -127,10 +127,10 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
           <button
             onClick={handleProcessImage}
             disabled={!selectedFile || processing}
-            className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white transition-all duration-200 ${
+            className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white transition-all duration-200 ${
               !selectedFile || processing
-                ? 'bg-gray-300 cursor-not-allowed'
-                : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
+                ? 'bg-dark-600 cursor-not-allowed'
+                : 'bg-gradient-to-r from-accent-600 to-accent-700 hover:from-accent-700 hover:to-accent-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
             }`}
           >
             {processing ? (
@@ -144,18 +144,18 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
 
         {/* Results */}
         {result && (
-          <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-md">
-            <h3 className="text-lg font-semibold text-green-800 mb-3">Resultado del Análisis:</h3>
+          <div className="mt-6 p-4 bg-dark-700 border border-accent-500 rounded-xl shadow-lg">
+            <h3 className="text-lg font-semibold text-white mb-3 font-display">Resultado del Análisis:</h3>
             {result.success ? (
-              <div className="text-green-700">
-                <p className="text-sm font-mono bg-white p-2 rounded border">
+              <div className="text-accent-300">
+                <p className="text-sm font-mono bg-dark-800 p-3 rounded-lg border border-dark-600 text-white">
                   {result.image_name ? result.image_name.split('.')[0] : 'imagen'} | 
                   Luz: {result.porcentaje_luz?.toFixed(2)}% | 
                   Sombra: {result.porcentaje_sombra?.toFixed(2)}%
                 </p>
               </div>
             ) : (
-              <p className="text-red-600">{result.error}</p>
+              <p className="text-red-400">{result.error}</p>
             )}
           </div>
         )}

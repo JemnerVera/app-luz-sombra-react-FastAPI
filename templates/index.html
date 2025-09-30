@@ -48,14 +48,6 @@
                                 <option value="">Seleccionar lote...</option>
                             </select>
                         </div>
-                        <div>
-                            <label for="hilera" class="block text-sm font-medium text-gray-700 mb-2">Hilera</label>
-                            <input type="text" id="hilera" name="hilera" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de hilera">
-                        </div>
-                        <div>
-                            <label for="numero_planta" class="block text-sm font-medium text-gray-700 mb-2">N° Planta</label>
-                            <input type="text" id="numero_planta" name="numero_planta" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de planta">
-                        </div>
                     </div>
 
                     <!-- Coordenadas GPS -->
@@ -70,11 +62,40 @@
                         </div>
                     </div>
 
-                    <!-- Input de archivo múltiple -->
+                    <!-- Área de subida de imágenes -->
                     <div>
-                        <label for="imagenes" class="block text-sm font-medium text-gray-700 mb-2">Imágenes *</label>
-                        <input type="file" id="imagenes" name="imagenes" accept="image/*" multiple required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <p class="text-sm text-gray-500 mt-1">Puedes seleccionar múltiples imágenes a la vez</p>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Imágenes *</label>
+                        
+                        <!-- Área de drag & drop -->
+                        <div id="drop-area" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition-colors cursor-pointer">
+                            <div class="space-y-4">
+                                <div class="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                    <i data-lucide="upload" class="h-8 w-8 text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <p class="text-lg font-medium text-gray-900">Arrastra imágenes aquí</p>
+                                    <p class="text-sm text-gray-500">o haz clic para seleccionar archivos</p>
+                                </div>
+                                <div class="flex justify-center gap-3">
+                                    <button type="button" id="select-files-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                        <i data-lucide="folder-open" class="h-4 w-4 inline mr-1"></i>
+                                        Seleccionar Archivos
+                                    </button>
+                                    <button type="button" id="add-more-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors hidden">
+                                        <i data-lucide="plus" class="h-4 w-4 inline mr-1"></i>
+                                        Agregar Más
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Input oculto -->
+                        <input type="file" id="imagenes" name="imagenes" accept="image/*" multiple class="hidden">
+                        
+                        <!-- Contador de archivos -->
+                        <div id="file-counter" class="mt-2 text-sm text-gray-600 hidden">
+                            <span id="file-count">0</span> archivo(s) seleccionado(s)
+                        </div>
                     </div>
 
                     <!-- Lista de imágenes subidas -->

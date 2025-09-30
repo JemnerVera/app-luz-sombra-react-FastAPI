@@ -116,15 +116,106 @@ function setupFileDragAndDrop() {
 // Setup multiple images functionality
 function setupMultipleImages() {
     const fileInput = document.getElementById('imagenes');
-    if (!fileInput) return;
+    const dropArea = document.getElementById('drop-area');
+    const selectFilesBtn = document.getElementById('select-files-btn');
+    const addMoreBtn = document.getElementById('add-more-btn');
+    const fileCounter = document.getElementById('file-counter');
+    const fileCount = document.getElementById('file-count');
     
+    if (!fileInput || !dropArea || !selectFilesBtn) return;
+    
+    // Click en el área de drop
+    dropArea.addEventListener('click', function() {
+        fileInput.click();
+    });
+    
+    // Click en botón seleccionar archivos
+    selectFilesBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        fileInput.click();
+    });
+    
+    // Click en botón agregar más
+    if (addMoreBtn) {
+        addMoreBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            // Crear un nuevo input temporal para agregar archivos
+            const tempInput = document.createElement('input');
+            tempInput.type = 'file';
+            tempInput.accept = 'image/*';
+            tempInput.multiple = true;
+            tempInput.addEventListener('change', function(e) {
+                const newFiles = Array.from(e.target.files);
+                if (newFiles.length > 0) {
+                    addMoreImages(newFiles);
+                }
+            });
+            tempInput.click();
+        });
+    }
+    
+    // Cambio en input de archivos
     fileInput.addEventListener('change', function(e) {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
             handleMultipleImages(files);
+            updateFileCounter(files.length);
             hasUnsavedData = true;
         }
     });
+}
+
+// Update file counter
+function updateFileCounter(count) {
+    const fileCounter = document.getElementById('file-counter');
+    const fileCount = document.getElementById('file-count');
+    const addMoreBtn = document.getElementById('add-more-btn');
+    
+    if (fileCounter && fileCount) {
+        fileCount.textContent = count;
+        if (count > 0) {
+            fileCounter.classList.remove('hidden');
+            if (addMoreBtn) addMoreBtn.classList.remove('hidden');
+        } else {
+            fileCounter.classList.add('hidden');
+            if (addMoreBtn) addMoreBtn.classList.add('hidden');
+        }
+    }
+}
+
+// Add more images to existing list
+function addMoreImages(newFiles) {
+    const fileInput = document.getElementById('imagenes');
+    const imagenesContainer = document.getElementById('imagenes-container');
+    const imagenesLista = document.getElementById('imagenes-lista');
+    
+    if (!fileInput || !imagenesContainer) return;
+    
+    // Get current files
+    const currentFiles = Array.from(fileInput.files);
+    const allFiles = [...currentFiles, ...newFiles];
+    
+    // Update file input
+    const dt = new DataTransfer();
+    allFiles.forEach(file => dt.items.add(file));
+    fileInput.files = dt.files;
+    
+    // Show the list if it was hidden
+    if (imagenesLista) {
+        imagenesLista.classList.remove('hidden');
+    }
+    
+    // Add new images to container
+    newFiles.forEach((file, index) => {
+        const globalIndex = currentFiles.length + index;
+        const imageItem = createImageItem(file, globalIndex);
+        imagenesContainer.appendChild(imageItem);
+    });
+    
+    // Update file counter
+    updateFileCounter(allFiles.length);
+    
+    hasUnsavedData = true;
 }
 
 // Handle multiple images selection
@@ -145,6 +236,9 @@ function handleMultipleImages(files) {
         const imageItem = createImageItem(file, index);
         imagenesContainer.appendChild(imageItem);
     });
+    
+    // Update file counter
+    updateFileCounter(files.length);
 }
 
 // Create image item with controls
@@ -152,41 +246,56 @@ function createImageItem(file, index) {
     const div = document.createElement('div');
     div.className = 'border border-gray-200 rounded-lg p-4 bg-gray-50';
     div.innerHTML = `
-        <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-                <div class="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden">
+        <!-- Todo en una sola fila -->
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-3 items-end">
+            <!-- Preview de imagen -->
+            <div class="xl:col-span-2">
+                <div class="w-16 h-16 bg-gray-200 rounded-lg overflow-hidden mx-auto">
                     <img id="preview-${index}" class="w-full h-full object-cover" alt="Preview">
                 </div>
-                <div>
-                    <h5 class="font-medium text-gray-900">${file.name}</h5>
-                    <p class="text-sm text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                </div>
             </div>
-            <button type="button" onclick="removeImage(${index})" class="text-red-600 hover:text-red-800">
-                <i data-lucide="x" class="h-5 w-5"></i>
-            </button>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Hilera</label>
-                <input type="text" name="hilera_${index}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de hilera">
+            
+            <!-- Información del archivo -->
+            <div class="xl:col-span-2">
+                <h5 class="font-medium text-gray-900 text-sm truncate" title="${file.name}">${file.name}</h5>
+                <p class="text-xs text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">N° Planta</label>
-                <input type="text" name="numero_planta_${index}" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Número de planta">
+            
+            <!-- Campo Hilera -->
+            <div class="xl:col-span-1">
+                <label class="block text-xs font-medium text-gray-700 mb-1">Hilera</label>
+                <input type="text" name="hilera_${index}" class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="N° hilera">
             </div>
-        </div>
-        
-        <div class="flex gap-2 mt-3">
-            <button type="button" onclick="previewImage(${index})" class="flex-1 bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                <i data-lucide="eye" class="h-4 w-4 inline mr-1"></i>
-                Ver Imagen
-            </button>
-            <button type="button" onclick="cropImage(${index})" class="flex-1 bg-green-100 hover:bg-green-200 text-green-700 px-3 py-2 rounded-md text-sm font-medium transition-colors">
-                <i data-lucide="crop" class="h-4 w-4 inline mr-1"></i>
-                Recortar
-            </button>
+            
+            <!-- Campo N° Planta -->
+            <div class="xl:col-span-1">
+                <label class="block text-xs font-medium text-gray-700 mb-1">N° Planta</label>
+                <input type="text" name="numero_planta_${index}" class="w-full px-2 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" placeholder="N° planta">
+            </div>
+            
+            <!-- Botón Ver Imagen -->
+            <div class="xl:col-span-2">
+                <button type="button" onclick="previewImage(${index})" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 px-2 py-1 rounded-md text-xs font-medium transition-colors">
+                    <i data-lucide="eye" class="h-3 w-3 inline mr-1"></i>
+                    Ver Imagen
+                </button>
+            </div>
+            
+            <!-- Botón Recortar -->
+            <div class="xl:col-span-2">
+                <button type="button" onclick="cropImage(${index})" class="w-full bg-green-100 hover:bg-green-200 text-green-700 px-2 py-1 rounded-md text-xs font-medium transition-colors">
+                    <i data-lucide="crop" class="h-3 w-3 inline mr-1"></i>
+                    Recortar
+                </button>
+            </div>
+            
+            <!-- Botón Eliminar -->
+            <div class="xl:col-span-2">
+                <button type="button" onclick="removeImage(${index})" class="w-full bg-red-100 hover:bg-red-200 text-red-700 px-2 py-1 rounded-md text-xs font-medium transition-colors">
+                    <i data-lucide="x" class="h-3 w-3 inline mr-1"></i>
+                    Eliminar
+                </button>
+            </div>
         </div>
     `;
     
@@ -230,6 +339,9 @@ function removeImage(index) {
     if (fileInput.files.length === 0) {
         document.getElementById('imagenes-lista').classList.add('hidden');
     }
+    
+    // Update file counter
+    updateFileCounter(fileInput.files.length);
     
     hasUnsavedData = true;
 }

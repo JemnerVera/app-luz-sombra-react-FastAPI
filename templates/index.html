@@ -22,8 +22,8 @@
                 
                 <!-- Form de subida -->
                 <form id="uploadForm" enctype="multipart/form-data" class="space-y-6">
-                    <!-- Campos de ubicación -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Campos de ubicación en una fila -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
                             <label for="empresa" class="block text-sm font-medium text-gray-700 mb-2">Empresa *</label>
                             <select id="empresa" name="empresa" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
@@ -32,33 +32,21 @@
                         </div>
                         <div>
                             <label for="fundo" class="block text-sm font-medium text-gray-700 mb-2">Fundo *</label>
-                            <select id="fundo" name="fundo" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Seleccionar fundo...</option>
+                            <select id="fundo" name="fundo" required disabled class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100">
+                                <option value="">Primero selecciona una empresa</option>
                             </select>
                         </div>
                         <div>
                             <label for="sector" class="block text-sm font-medium text-gray-700 mb-2">Sector</label>
-                            <select id="sector" name="sector" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Seleccionar sector...</option>
+                            <select id="sector" name="sector" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100">
+                                <option value="">Primero selecciona un fundo</option>
                             </select>
                         </div>
                         <div>
                             <label for="lote" class="block text-sm font-medium text-gray-700 mb-2">Lote</label>
-                            <select id="lote" name="lote" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">Seleccionar lote...</option>
+                            <select id="lote" name="lote" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-100">
+                                <option value="">Primero selecciona un sector</option>
                             </select>
-                        </div>
-                    </div>
-
-                    <!-- Coordenadas GPS -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="latitud" class="block text-sm font-medium text-gray-700 mb-2">Latitud</label>
-                            <input type="number" id="latitud" name="latitud" step="any" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: -33.4489">
-                        </div>
-                        <div>
-                            <label for="longitud" class="block text-sm font-medium text-gray-700 mb-2">Longitud</label>
-                            <input type="number" id="longitud" name="longitud" step="any" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej: -70.6693">
                         </div>
                     </div>
 

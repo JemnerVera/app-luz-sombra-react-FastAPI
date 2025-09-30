@@ -259,6 +259,7 @@ function createImageItem(file, index) {
             <div class="xl:col-span-2">
                 <h5 class="font-medium text-gray-900 text-sm truncate" title="${file.name}">${file.name}</h5>
                 <p class="text-xs text-gray-500">${(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                <p id="gps-status-${index}" class="text-xs text-gray-400">Extrayendo GPS...</p>
             </div>
             
             <!-- Campo Hilera -->
@@ -299,17 +300,81 @@ function createImageItem(file, index) {
         </div>
     `;
     
-    // Create preview
+    // Create preview and extract GPS
     const reader = new FileReader();
     reader.onload = function(e) {
         const preview = document.getElementById(`preview-${index}`);
         if (preview) {
             preview.src = e.target.result;
         }
+        
+        // Extract GPS from EXIF
+        extractGPSFromImage(file, index);
     };
     reader.readAsDataURL(file);
     
     return div;
+}
+
+// Extract GPS from image EXIF data
+function extractGPSFromImage(file, index) {
+    const gpsStatus = document.getElementById(`gps-status-${index}`);
+    
+    if (!gpsStatus) return;
+    
+    // Check if EXIF.js is available
+    if (typeof EXIF === 'undefined') {
+        gpsStatus.textContent = 'Sin GPS';
+        gpsStatus.className = 'text-xs text-red-500';
+        return;
+    }
+    
+    EXIF.getData(file, function() {
+        const lat = EXIF.getTag(this, "GPSLatitude");
+        const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+        const lon = EXIF.getTag(this, "GPSLongitude");
+        const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+        
+        if (lat && lon && latRef && lonRef) {
+            // Convert GPS coordinates to decimal degrees
+            const latDecimal = convertDMSToDD(lat, latRef);
+            const lonDecimal = convertDMSToDD(lon, lonRef);
+            
+            // Store GPS data in hidden inputs
+            const latInput = document.createElement('input');
+            latInput.type = 'hidden';
+            latInput.name = `latitud_${index}`;
+            latInput.value = latDecimal;
+            
+            const lonInput = document.createElement('input');
+            lonInput.type = 'hidden';
+            lonInput.name = `longitud_${index}`;
+            lonInput.value = lonDecimal;
+            
+            // Add to the image container
+            const imageContainer = gpsStatus.closest('.border');
+            if (imageContainer) {
+                imageContainer.appendChild(latInput);
+                imageContainer.appendChild(lonInput);
+            }
+            
+            // Update status
+            gpsStatus.textContent = `GPS: ${latDecimal.toFixed(4)}, ${lonDecimal.toFixed(4)}`;
+            gpsStatus.className = 'text-xs text-green-600';
+        } else {
+            gpsStatus.textContent = 'Sin GPS';
+            gpsStatus.className = 'text-xs text-red-500';
+        }
+    });
+}
+
+// Convert DMS (Degrees, Minutes, Seconds) to DD (Decimal Degrees)
+function convertDMSToDD(dms, ref) {
+    let dd = dms[0] + dms[1]/60 + dms[2]/(60*60);
+    if (ref === "S" || ref === "W") {
+        dd = dd * -1;
+    }
+    return dd;
 }
 
 // Remove image from list
@@ -428,18 +493,16 @@ async function loadFieldData() {
         const response = await fetch('/api/google-sheets/field-data');
         const data = await response.json();
         
+        // Store all data globally for filtering
+        window.fieldData = data;
+        
+        // Only populate empresa initially
         if (data.empresa) {
             populateSelect('empresa', data.empresa);
         }
-        if (data.fundo) {
-            populateSelect('fundo', data.fundo);
-        }
-        if (data.sector) {
-            populateSelect('sector', data.sector);
-        }
-        if (data.lote) {
-            populateSelect('lote', data.lote);
-        }
+        
+        // Setup cascade event listeners
+        setupCascadeSelects();
         
         console.log('✅ Field data loaded successfully');
     } catch (error) {
@@ -465,6 +528,119 @@ function populateSelect(selectId, options) {
         optionElement.textContent = option;
         select.appendChild(optionElement);
     });
+}
+
+// Setup cascade select functionality
+function setupCascadeSelects() {
+    const empresaSelect = document.getElementById('empresa');
+    const fundoSelect = document.getElementById('fundo');
+    const sectorSelect = document.getElementById('sector');
+    const loteSelect = document.getElementById('lote');
+    
+    if (!empresaSelect || !fundoSelect || !sectorSelect || !loteSelect) return;
+    
+    // Empresa change handler
+    empresaSelect.addEventListener('change', function() {
+        const selectedEmpresa = this.value;
+        
+        if (selectedEmpresa) {
+            // Enable and populate fundo
+            fundoSelect.disabled = false;
+            fundoSelect.classList.remove('bg-gray-100');
+            fundoSelect.classList.add('bg-white');
+            
+            const fundos = getFundosByEmpresa(selectedEmpresa);
+            populateSelect('fundo', fundos);
+            
+            // Reset downstream selects
+            resetSelect('sector', 'Primero selecciona un fundo');
+            resetSelect('lote', 'Primero selecciona un sector');
+        } else {
+            // Reset all downstream selects
+            resetSelect('fundo', 'Primero selecciona una empresa');
+            resetSelect('sector', 'Primero selecciona un fundo');
+            resetSelect('lote', 'Primero selecciona un sector');
+        }
+    });
+    
+    // Fundo change handler
+    fundoSelect.addEventListener('change', function() {
+        const selectedEmpresa = empresaSelect.value;
+        const selectedFundo = this.value;
+        
+        if (selectedFundo) {
+            // Enable and populate sector
+            sectorSelect.disabled = false;
+            sectorSelect.classList.remove('bg-gray-100');
+            sectorSelect.classList.add('bg-white');
+            
+            const sectores = getSectoresByEmpresaAndFundo(selectedEmpresa, selectedFundo);
+            populateSelect('sector', sectores);
+            
+            // Reset downstream selects
+            resetSelect('lote', 'Primero selecciona un sector');
+        } else {
+            // Reset downstream selects
+            resetSelect('sector', 'Primero selecciona un fundo');
+            resetSelect('lote', 'Primero selecciona un sector');
+        }
+    });
+    
+    // Sector change handler
+    sectorSelect.addEventListener('change', function() {
+        const selectedEmpresa = empresaSelect.value;
+        const selectedFundo = fundoSelect.value;
+        const selectedSector = this.value;
+        
+        if (selectedSector) {
+            // Enable and populate lote
+            loteSelect.disabled = false;
+            loteSelect.classList.remove('bg-gray-100');
+            loteSelect.classList.add('bg-white');
+            
+            const lotes = getLotesByEmpresaFundoAndSector(selectedEmpresa, selectedFundo, selectedSector);
+            populateSelect('lote', lotes);
+        } else {
+            // Reset downstream selects
+            resetSelect('lote', 'Primero selecciona un sector');
+        }
+    });
+}
+
+// Reset select to disabled state
+function resetSelect(selectId, placeholder) {
+    const select = document.getElementById(selectId);
+    if (select) {
+        select.disabled = true;
+        select.classList.add('bg-gray-100');
+        select.classList.remove('bg-white');
+        select.innerHTML = `<option value="">${placeholder}</option>`;
+    }
+}
+
+// Get fundos by empresa
+function getFundosByEmpresa(empresa) {
+    if (!window.fieldData || !window.fieldData.fundo) return [];
+    
+    // For now, return all fundos. In a real implementation, you'd filter by empresa
+    // This would require the API to return structured data with relationships
+    return window.fieldData.fundo;
+}
+
+// Get sectores by empresa and fundo
+function getSectoresByEmpresaAndFundo(empresa, fundo) {
+    if (!window.fieldData || !window.fieldData.sector) return [];
+    
+    // For now, return all sectores. In a real implementation, you'd filter by empresa and fundo
+    return window.fieldData.sector;
+}
+
+// Get lotes by empresa, fundo and sector
+function getLotesByEmpresaFundoAndSector(empresa, fundo, sector) {
+    if (!window.fieldData || !window.fieldData.lote) return [];
+    
+    // For now, return all lotes. In a real implementation, you'd filter by empresa, fundo and sector
+    return window.fieldData.lote;
 }
 
 // Change tab with unsaved data check
@@ -600,13 +776,17 @@ async function handleImageUpload(e) {
             individualFormData.append('fundo', formData.get('fundo'));
             individualFormData.append('sector', formData.get('sector') || '');
             individualFormData.append('lote', formData.get('lote') || '');
-            individualFormData.append('latitud', formData.get('latitud') || '');
-            individualFormData.append('longitud', formData.get('longitud') || '');
             
             // Add image-specific fields
             individualFormData.append('imagen', file);
             individualFormData.append('hilera', formData.get(`hilera_${i}`) || '');
             individualFormData.append('numero_planta', formData.get(`numero_planta_${i}`) || '');
+            
+            // Add GPS coordinates if available (from EXIF)
+            const latitud = formData.get(`latitud_${i}`);
+            const longitud = formData.get(`longitud_${i}`);
+            if (latitud) individualFormData.append('latitud', latitud);
+            if (longitud) individualFormData.append('longitud', longitud);
             
             console.log(`📸 Processing image ${i + 1}/${files.length}: ${file.name}`);
             

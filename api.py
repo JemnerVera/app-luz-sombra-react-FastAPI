@@ -6,7 +6,6 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 from typing import Optional
 import json
-import os
 import base64
 from datetime import datetime
 
@@ -61,13 +60,38 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configurar templates
-templates = Jinja2Templates(directory="templates")
+# Configurar archivos estáticos para React
+static_dir = "agricola-frontend/build"
+if os.path.exists(static_dir):
+    app.mount("/static", StaticFiles(directory=f"{static_dir}/static"), name="static")
 
-# Ruta principal - servir la aplicación web
+# Ruta principal - servir la aplicación React
 @app.get("/", response_class=HTMLResponse)
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+async def root():
+    if os.path.exists(f"{static_dir}/index.html"):
+        return FileResponse(f"{static_dir}/index.html")
+    else:
+        return HTMLResponse("""
+        <html>
+            <head><title>Agricola Luz-Sombra</title></head>
+            <body>
+                <h1>Agricola Luz-Sombra</h1>
+                <p>Frontend no encontrado. Ejecuta 'npm run build' en la carpeta agricola-frontend</p>
+                <p>API funcionando correctamente en <a href="/docs">/docs</a></p>
+            </body>
+        </html>
+        """)
+
+# Servir archivos estáticos de React (CSS, JS, imágenes)
+@app.get("/{path:path}")
+async def serve_react_app(path: str):
+    if os.path.exists(f"{static_dir}/{path}"):
+        return FileResponse(f"{static_dir}/{path}")
+    elif os.path.exists(f"{static_dir}/index.html"):
+        # Para rutas de React Router, servir index.html
+        return FileResponse(f"{static_dir}/index.html")
+    else:
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
 
 # Ruta de salud para Railway
 @app.get("/health")
@@ -1050,4 +1074,7 @@ async def procesar_imagen_visual(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    # Obtener puerto de variable de entorno (Render usa PORT)
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    uvicorn.run(app, host=host, port=port)

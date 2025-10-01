@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from typing import Optional
 import json
 import base64
+import os
 from datetime import datetime
 
 # from src.database.models import ProcesamientoImagen, create_database, get_database_url  # Deshabilitado - usando solo Google Sheets
@@ -81,17 +82,6 @@ async def root():
             </body>
         </html>
         """)
-
-# Servir archivos estáticos de React (CSS, JS, imágenes)
-@app.get("/{path:path}")
-async def serve_react_app(path: str):
-    if os.path.exists(f"{static_dir}/{path}"):
-        return FileResponse(f"{static_dir}/{path}")
-    elif os.path.exists(f"{static_dir}/index.html"):
-        # Para rutas de React Router, servir index.html
-        return FileResponse(f"{static_dir}/index.html")
-    else:
-        raise HTTPException(status_code=404, detail="Archivo no encontrado")
 
 # Ruta de salud para Railway
 @app.get("/health")
@@ -1071,6 +1061,17 @@ async def procesar_imagen_visual(
         print(f"❌ Error procesando imagen visual: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error procesando imagen: {str(e)}")
 
+
+# Servir archivos estáticos de React (CSS, JS, imágenes) - DEBE IR AL FINAL
+@app.get("/{path:path}")
+async def serve_react_app(path: str):
+    if os.path.exists(f"{static_dir}/{path}"):
+        return FileResponse(f"{static_dir}/{path}")
+    elif os.path.exists(f"{static_dir}/index.html"):
+        # Para rutas de React Router, servir index.html
+        return FileResponse(f"{static_dir}/index.html")
+    else:
+        raise HTTPException(status_code=404, detail="Archivo no encontrado")
 
 if __name__ == "__main__":
     import uvicorn

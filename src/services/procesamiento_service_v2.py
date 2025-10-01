@@ -23,7 +23,7 @@ class ProcesamientoServiceV2:
         self._cargar_modelo()
     
     def _cargar_modelo(self):
-        """Carga el modelo perfeccionado"""
+        """Carga el modelo perfeccionado con manejo de compatibilidad"""
         try:
             # Intentar cargar con joblib primero (más robusto)
             try:
@@ -52,7 +52,32 @@ class ProcesamientoServiceV2:
                 print(f"✅ Modelo cargado con pickle desde: {self.modelo_path}")
         except Exception as e:
             print(f"❌ Error cargando modelo: {e}")
-            raise
+            # Si falla la carga del modelo, crear un modelo dummy para que la app funcione
+            print("⚠️ Creando modelo dummy para continuar...")
+            self.modelo = None
+            self.scaler = None
+            self.encoder = None
+    
+    def _clasificacion_basica(self, pixeles):
+        """
+        Clasificación básica basada en umbrales de color cuando el modelo no está disponible
+        """
+        # Convertir a HSV para mejor clasificación
+        hsv = cv2.cvtColor(pixeles.reshape(-1, 1, 3), cv2.COLOR_BGR2HSV).reshape(-1, 3)
+        
+        # Umbrales básicos para clasificar suelo vs vegetación
+        # Suelo: valores bajos de saturación y brillo
+        suelo_mask = (hsv[:, 1] < 50) & (hsv[:, 2] < 120)
+        
+        # Vegetación: valores altos de saturación y verde
+        vegetacion_mask = (hsv[:, 1] > 50) & (hsv[:, 0] > 30) & (hsv[:, 0] < 90)
+        
+        # Clasificar
+        etiquetas = np.zeros(len(pixeles), dtype=int)
+        etiquetas[suelo_mask] = 0  # Suelo
+        etiquetas[vegetacion_mask] = 1  # Vegetación
+        
+        return etiquetas
     
     def extraer_caracteristicas_optimizadas(self, pixeles):
         """
@@ -105,11 +130,17 @@ class ProcesamientoServiceV2:
         pixeles = imagen.reshape(-1, 3)
         caracteristicas = self.extraer_caracteristicas_optimizadas(pixeles)
         
-        # Escalar características
-        caracteristicas_scaled = self.scaler.transform(caracteristicas)
-        
-        # Clasificar
-        etiquetas_pred = self.modelo.predict(caracteristicas_scaled)
+        # Verificar si el modelo está disponible
+        if self.modelo is None or self.scaler is None:
+            print("⚠️ Modelo no disponible, usando clasificación básica...")
+            # Clasificación básica basada en umbrales de color
+            etiquetas_pred = self._clasificacion_basica(pixeles)
+        else:
+            # Escalar características
+            caracteristicas_scaled = self.scaler.transform(caracteristicas)
+            
+            # Clasificar
+            etiquetas_pred = self.modelo.predict(caracteristicas_scaled)
         
         # Calcular porcentajes
         porc_luz, porc_sombra, total_suelo = calcular_porcentaje_suelo(etiquetas_pred)

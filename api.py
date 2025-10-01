@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse, FileResponse, HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from sqlalchemy.orm import Session
+# from sqlalchemy.orm import Session  # Deshabilitado - usando solo Google Sheets
 from typing import Optional
 import json
 import base64

@@ -15,7 +15,7 @@ google-auth-httplib2==0.1.1
 google-auth-oauthlib==1.1.0
 
 # Base de datos
-sqlite3
+# sqlite3 - viene incluido con Python por defecto
 
 # Utilidades
 python-dotenv==1.0.0

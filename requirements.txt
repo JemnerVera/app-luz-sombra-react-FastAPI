@@ -31,5 +31,4 @@ passlib[bcrypt]==1.7.4
 aiofiles==23.2.1
 
 # EXIF data
-Pillow==10.1.0
 piexif==1.1.3

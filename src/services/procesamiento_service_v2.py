@@ -25,31 +25,22 @@ class ProcesamientoServiceV2:
     def _cargar_modelo(self):
         """Carga el modelo perfeccionado con manejo de compatibilidad"""
         try:
-            # Intentar cargar con joblib primero (más robusto)
-            try:
-                with open(self.modelo_path, 'rb') as f:
-                    data = joblib.load(f)
-                    if isinstance(data, tuple) and len(data) >= 2:
-                        self.modelo, self.scaler = data[0], data[1]
-                        if len(data) == 3:
-                            self.encoder = data[2]
-                    else:
-                        self.modelo = data
-                print(f"✅ Modelo cargado con joblib desde: {self.modelo_path}")
-            except Exception as joblib_error:
-                print(f"⚠️ Joblib falló, intentando con pickle: {joblib_error}")
-                # Fallback a pickle si joblib falla
-                with open(self.modelo_path, 'rb') as f:
-                    self.modelo, self.scaler = pickle.load(f)
-                # El modelo también incluye el encoder
-                try:
-                    with open(self.modelo_path, 'rb') as f:
-                        data = pickle.load(f)
-                        if len(data) == 3:
-                            self.modelo, self.scaler, self.encoder = data
-                except:
-                    pass
-                print(f"✅ Modelo cargado con pickle desde: {self.modelo_path}")
+            # Usar joblib directamente (más compatible con scikit-learn)
+            data = joblib.load(self.modelo_path)
+            
+            if isinstance(data, tuple) and len(data) >= 2:
+                self.modelo, self.scaler = data[0], data[1]
+                if len(data) == 3:
+                    self.encoder = data[2]
+                else:
+                    self.encoder = None
+            else:
+                self.modelo = data
+                self.scaler = None
+                self.encoder = None
+                
+            print(f"✅ Modelo cargado con joblib desde: {self.modelo_path}")
+            
         except Exception as e:
             print(f"❌ Error cargando modelo: {e}")
             # Si falla la carga del modelo, crear un modelo dummy para que la app funcione

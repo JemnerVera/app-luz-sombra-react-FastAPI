@@ -1,18 +1,36 @@
-# Usar Python 3.11 como base
-FROM python:3.11-slim
+# Multi-stage build para FastAPI + React
+# Stage 1: Build React frontend
+FROM node:18-alpine AS frontend-builder
 
-# Establecer directorio de trabajo
-WORKDIR /app
+WORKDIR /app/frontend
 
-# Instalar dependencias del sistema mínimas
+# Copiar archivos de configuración del frontend
+COPY agricola-frontend/package*.json ./
+
+# Instalar dependencias
+RUN npm install
+
+# Copiar código fuente del frontend
+COPY agricola-frontend/ ./
+
+# Construir la aplicación React
+RUN npm run build
+
+# Stage 2: Python backend
+FROM python:3.11-slim AS backend
+
+# Instalar dependencias del sistema para OpenCV
 RUN apt-get update && apt-get install -y \
     build-essential \
     libglib2.0-0 \
-    libsm6 \
-    libxext6 \
-    libxrender-dev \
     libgomp1 \
+    libjpeg-dev \
+    libpng-dev \
+    libtiff-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Establecer directorio de trabajo
+WORKDIR /app
 
 # Copiar requirements.txt primero para aprovechar cache de Docker
 COPY requirements.txt .
@@ -23,8 +41,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar el código de la aplicación
 COPY . .
 
-# Crear directorio para archivos estáticos
-RUN mkdir -p agricola-frontend/build
+# Copiar el frontend compilado desde el stage anterior
+COPY --from=frontend-builder /app/frontend/build ./agricola-frontend/build
+
+# Crear directorios necesarios
+RUN mkdir -p resultados
 
 # Exponer el puerto
 EXPOSE 10000

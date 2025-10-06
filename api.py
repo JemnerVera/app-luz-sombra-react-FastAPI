@@ -105,6 +105,21 @@ procesamiento_service = ProcesamientoServiceV2()
 
 # Inicializar cliente de Google Sheets
 try:
+    # Crear archivos temporales desde variables de entorno si están disponibles
+    if os.getenv('GOOGLE_SHEETS_CREDENTIALS_BASE64'):
+        credentials_b64 = os.getenv('GOOGLE_SHEETS_CREDENTIALS_BASE64')
+        credentials_json = base64.b64decode(credentials_b64).decode('utf-8')
+        with open('credentials.json', 'w') as f:
+            f.write(credentials_json)
+        print("✅ Credenciales cargadas desde variable de entorno")
+    
+    if os.getenv('GOOGLE_SHEETS_TOKEN_BASE64'):
+        token_b64 = os.getenv('GOOGLE_SHEETS_TOKEN_BASE64')
+        token_json = base64.b64decode(token_b64).decode('utf-8')
+        with open('token.json', 'w') as f:
+            f.write(token_json)
+        print("✅ Token cargado desde variable de entorno")
+    
     sheets_client = GoogleSheetsClient()
     print("✅ Google Sheets client inicializado")
 except Exception as e:

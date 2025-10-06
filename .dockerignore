@@ -15,14 +15,8 @@ DEPLOY_GUIDE.md
 DEPLOYMENT_GUIDE.md
 GOOGLE_SHEETS_SETUP.md
 
-# Archivos de Node.js (ya están compilados)
+# Archivos de Node.js (solo excluir node_modules, el resto se necesita para build)
 agricola-frontend/node_modules/
-agricola-frontend/src/
-agricola-frontend/public/
-agricola-frontend/package.json
-agricola-frontend/package-lock.json
-agricola-frontend/tailwind.config.js
-agricola-frontend/tsconfig.json
 
 # Archivos de entrenamiento (no necesarios en producción)
 dataset/

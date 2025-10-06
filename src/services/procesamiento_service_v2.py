@@ -51,22 +51,54 @@ class ProcesamientoServiceV2:
     
     def _clasificacion_basica(self, pixeles):
         """
-        Clasificación básica basada en umbrales de color cuando el modelo no está disponible
+        Clasificación optimizada basada en análisis real del dataset
         """
         # Convertir a HSV para mejor clasificación
         hsv = cv2.cvtColor(pixeles.reshape(-1, 1, 3), cv2.COLOR_BGR2HSV).reshape(-1, 3)
         
-        # Umbrales básicos para clasificar suelo vs vegetación
-        # Suelo: valores bajos de saturación y brillo
-        suelo_mask = (hsv[:, 1] < 50) & (hsv[:, 2] < 120)
+        # Extraer componentes RGB
+        r, g, b = pixeles[:, 0], pixeles[:, 1], pixeles[:, 2]
         
-        # Vegetación: valores altos de saturación y verde
-        vegetacion_mask = (hsv[:, 1] > 50) & (hsv[:, 0] > 30) & (hsv[:, 0] < 90)
+        # Calcular características
+        intensity = (r + g + b) / 3.0
+        green_ratio = g / (r + b + 1)
         
-        # Clasificar
+        # Umbrales ajustados basados en datos reales del dataset
+        SUELO_INTENSITY_THRESHOLD = 120.0  # Ajustado para detectar más suelo en luz
+        MALLA_INTENSITY_THRESHOLD = 120.0  # Mismo umbral para simplificar
+        SUELO_GREEN_THRESHOLD = 0.52       # Ajustado para detectar más suelo
+        MALLA_GREEN_THRESHOLD = 0.52       # Mismo umbral
+        
+        # Clasificación basada en datos reales
         etiquetas = np.zeros(len(pixeles), dtype=int)
-        etiquetas[suelo_mask] = 0  # Suelo
-        etiquetas[vegetacion_mask] = 1  # Vegetación
+        
+        # SUELO_SOMBRA: baja intensidad, green ratio medio
+        suelo_sombra = (intensity < SUELO_INTENSITY_THRESHOLD) & (green_ratio <= SUELO_GREEN_THRESHOLD)
+        
+        # SUELO_LUZ: alta intensidad, green ratio medio
+        suelo_luz = (intensity >= SUELO_INTENSITY_THRESHOLD) & (green_ratio <= SUELO_GREEN_THRESHOLD)
+        
+        # MALLA_SOMBRA: baja intensidad, green ratio bajo (más verde)
+        malla_sombra = (intensity < MALLA_INTENSITY_THRESHOLD) & (green_ratio > MALLA_GREEN_THRESHOLD)
+        
+        # MALLA_LUZ: alta intensidad, green ratio bajo (más verde)
+        malla_luz = (intensity >= MALLA_INTENSITY_THRESHOLD) & (green_ratio > MALLA_GREEN_THRESHOLD)
+        
+        # Asignar etiquetas
+        etiquetas[suelo_sombra] = 0  # SUELO_SOMBRA
+        etiquetas[suelo_luz] = 1     # SUELO_LUZ
+        etiquetas[malla_sombra] = 2  # MALLA_SOMBRA
+        etiquetas[malla_luz] = 3     # MALLA_LUZ
+        
+        # Para píxeles no clasificados, usar heurística adicional
+        no_clasificados = etiquetas == 0
+        if np.any(no_clasificados):
+            # Clasificar por intensidad
+            for i in np.where(no_clasificados)[0]:
+                if intensity[i] < SUELO_INTENSITY_THRESHOLD:
+                    etiquetas[i] = 0  # SUELO_SOMBRA
+                else:
+                    etiquetas[i] = 1  # SUELO_LUZ
         
         return etiquetas
     

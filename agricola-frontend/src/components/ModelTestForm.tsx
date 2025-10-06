@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { apiService } from '../services/api';
 import { ProcessingResult } from '../types';
 import { formatFileSize } from '../utils/helpers';
-import { Upload, Eye } from 'lucide-react';
+import { Upload, Eye, Brain, Loader } from 'lucide-react';
 import { config } from '../config/environment';
+import { useTensorFlow } from '../hooks/useTensorFlow';
 
 interface ModelTestFormProps {
   onNotification: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
@@ -15,6 +16,16 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<ProcessingResult | null>(null);
   const [processedImageUrl, setProcessedImageUrl] = useState<string>('');
+  const [useTensorFlow, setUseTensorFlow] = useState(true);
+  
+  // TensorFlow hook
+  const {
+    isInitialized,
+    isModelReady,
+    isProcessing: tfProcessing,
+    error: tfError,
+    processImage: tfProcessImage
+  } = useTensorFlow();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -42,30 +53,50 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
     setProcessedImageUrl('');
 
     try {
-      const formData = new FormData();
-      formData.append('imagen', selectedFile);
-      // No need for field data in test mode
-      formData.append('empresa', 'TEST');
-      formData.append('fundo', 'TEST');
-      formData.append('sector', 'TEST');
-      formData.append('lote', 'TEST');
-      formData.append('hilera', 'TEST');
-      formData.append('numero_planta', 'TEST');
-
-      const result = await apiService.testModel(formData);
-      setResult(result);
-      
-      if (result.success && result.image_name) {
-        // Construct the processed image URL
-        const processedUrl = `${config.apiUrl}/resultados/${result.image_name}`;
-        setProcessedImageUrl(processedUrl);
-        onNotification('Imagen procesada exitosamente!', 'success');
+      if (useTensorFlow && isModelReady) {
+        // Use TensorFlow.js for processing
+        console.log('🧠 Processing with TensorFlow.js...');
+        const tfResult = await tfProcessImage(selectedFile);
+        
+        // Convert TensorFlow result to ProcessingResult format
+        const processingResult: ProcessingResult = {
+          success: true,
+          porcentaje_luz: tfResult.lightPercentage,
+          porcentaje_sombra: tfResult.shadowPercentage,
+          image_name: `tf_${selectedFile.name}_${Date.now()}.png`,
+          processed_image: tfResult.processedImageData
+        };
+        
+        setResult(processingResult);
+        setProcessedImageUrl(tfResult.processedImageData);
+        onNotification('Imagen procesada con TensorFlow.js!', 'success');
+        
       } else {
-        onNotification(result.error || 'Error al procesar la imagen', 'error');
+        // Fallback to backend processing
+        console.log('🔄 Processing with backend...');
+        const formData = new FormData();
+        formData.append('imagen', selectedFile);
+        formData.append('empresa', 'TEST');
+        formData.append('fundo', 'TEST');
+        formData.append('sector', 'TEST');
+        formData.append('lote', 'TEST');
+        formData.append('hilera', 'TEST');
+        formData.append('numero_planta', 'TEST');
+
+        const result = await apiService.testModel(formData);
+        setResult(result);
+        
+        if (result.success && result.image_name) {
+          const processedUrl = `${config.apiUrl}/resultados/${result.image_name}`;
+          setProcessedImageUrl(processedUrl);
+          onNotification('Imagen procesada exitosamente!', 'success');
+        } else {
+          onNotification(result.error || 'Error al procesar la imagen', 'error');
+        }
       }
     } catch (error: any) {
       console.error('Error processing image:', error);
-      onNotification(error.response?.data?.detail || 'Error al procesar la imagen', 'error');
+      onNotification(error.message || 'Error al procesar la imagen', 'error');
     } finally {
       setProcessing(false);
     }
@@ -77,6 +108,50 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
       <p className="text-gray-600 dark:text-dark-300 mb-6">
         Sube una imagen para probar el modelo de Machine Learning y ver las áreas de luz y sombra identificadas.
       </p>
+
+      {/* TensorFlow Status */}
+      <div className="mb-6 p-4 bg-gray-50 dark:bg-dark-700 rounded-lg border border-gray-200 dark:border-dark-600">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+            <Brain className="w-5 h-5 mr-2" />
+            TensorFlow.js Status
+          </h3>
+          <div className="flex items-center space-x-2">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={useTensorFlow}
+                onChange={(e) => setUseTensorFlow(e.target.checked)}
+                className="mr-2"
+                disabled={!isModelReady}
+              />
+              <span className="text-sm text-gray-600 dark:text-dark-300">Usar TensorFlow.js</span>
+            </label>
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <div className="flex items-center text-sm">
+            <span className="w-24 text-gray-600 dark:text-dark-300">Inicializado:</span>
+            <span className={`px-2 py-1 rounded text-xs ${isInitialized ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {isInitialized ? '✅ Sí' : '❌ No'}
+            </span>
+          </div>
+          
+          <div className="flex items-center text-sm">
+            <span className="w-24 text-gray-600 dark:text-dark-300">Modelo:</span>
+            <span className={`px-2 py-1 rounded text-xs ${isModelReady ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+              {isModelReady ? '✅ Listo' : tfProcessing ? '🔄 Entrenando...' : '⏳ Cargando...'}
+            </span>
+          </div>
+          
+          {tfError && (
+            <div className="text-sm text-red-600 dark:text-red-400">
+              Error: {tfError}
+            </div>
+          )}
+        </div>
+      </div>
       
       <div className="space-y-6">
         {/* Image Upload */}
@@ -129,17 +204,20 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
             onClick={handleProcessImage}
             disabled={!selectedFile || processing}
             className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white transition-all duration-200 ${
-              !selectedFile || processing
+              !selectedFile || processing || (useTensorFlow && !isModelReady)
                 ? 'bg-dark-600 cursor-not-allowed'
                 : 'bg-gradient-to-r from-accent-600 to-accent-700 hover:from-accent-700 hover:to-accent-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
             }`}
           >
             {processing ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+              <Loader className="h-5 w-5 mr-3 animate-spin" />
             ) : (
-              <Eye className="h-5 w-5 mr-3" />
+              useTensorFlow ? <Brain className="h-5 w-5 mr-3" /> : <Eye className="h-5 w-5 mr-3" />
             )}
-            {processing ? 'Procesando...' : 'Procesar Imagen'}
+            {processing ? 
+              (useTensorFlow ? 'Procesando con TensorFlow.js...' : 'Procesando...') : 
+              (useTensorFlow ? 'Procesar con TensorFlow.js' : 'Procesar Imagen')
+            }
           </button>
         </div>
 

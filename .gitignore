@@ -1,6 +1,8 @@
 # Archivos sensibles - NUNCA subir al repositorio
 token.json
 credentials.json
+google_sheets_config.json
+modelo_perfeccionado.pkl
 *.key
 *.pem
 .env
@@ -24,6 +26,9 @@ Thumbs.db
 
 # Archivos de resultados
 resultados/
+
+# Archivos de prueba
+pixel_test_*.png
 
 # Archivos de configuración local
 start_*.bat

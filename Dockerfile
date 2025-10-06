@@ -17,7 +17,7 @@ COPY agricola-frontend/ ./
 RUN npm run build
 
 # Stage 2: Python backend
-FROM python:3.11-slim AS backend
+FROM python:3.11-slim
 
 # Instalar dependencias del sistema para OpenCV
 RUN apt-get update && apt-get install -y \
@@ -27,6 +27,7 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libpng-dev \
     libtiff-dev \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Establecer directorio de trabajo
@@ -53,6 +54,10 @@ EXPOSE 10000
 # Variables de entorno
 ENV PYTHONPATH=/app
 ENV PORT=10000
+
+# Health check para Cloud Run
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:10000/health || exit 1
 
 # Comando para ejecutar la aplicación
 CMD ["python", "api.py"]

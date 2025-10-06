@@ -3,6 +3,7 @@ import { apiService } from '../services/api';
 import { ProcessingResult } from '../types';
 import { formatFileSize } from '../utils/helpers';
 import { Upload, Eye } from 'lucide-react';
+import { config } from '../config/environment';
 
 interface ModelTestFormProps {
   onNotification: (message: string, type: 'success' | 'error' | 'warning' | 'info') => void;
@@ -56,7 +57,7 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
       
       if (result.success && result.image_name) {
         // Construct the processed image URL
-        const processedUrl = `http://localhost:8000/resultados/${result.image_name}`;
+        const processedUrl = `${config.apiUrl}/resultados/${result.image_name}`;
         setProcessedImageUrl(processedUrl);
         onNotification('Imagen procesada exitosamente!', 'success');
       } else {

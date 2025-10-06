@@ -1090,7 +1090,8 @@ async def serve_react_app(path: str):
 
 if __name__ == "__main__":
     import uvicorn
-    # Obtener puerto de variable de entorno (Render usa PORT)
-    port = int(os.getenv("PORT", 8000))
+    # Obtener puerto de variable de entorno (Railway usa PORT=8080)
+    port = int(os.getenv("PORT", 8080))
     host = os.getenv("HOST", "0.0.0.0")
+    print(f"🚀 Starting server on {host}:{port}")
     uvicorn.run(app, host=host, port=port)

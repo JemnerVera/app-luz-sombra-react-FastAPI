@@ -49,15 +49,15 @@ COPY --from=frontend-builder /app/frontend/build ./agricola-frontend/build
 RUN mkdir -p resultados
 
 # Exponer el puerto
-EXPOSE 10000
+EXPOSE 8080
 
 # Variables de entorno
 ENV PYTHONPATH=/app
-ENV PORT=10000
+ENV PORT=8080
 
-# Health check para Cloud Run
+# Health check para Railway
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:10000/health || exit 1
+  CMD curl -f http://localhost:8080/health || exit 1
 
 # Comando para ejecutar la aplicación
 CMD ["python", "api.py"]

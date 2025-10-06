@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { apiService } from '../services/api';
 import { ProcessingResult } from '../types';
 import { formatFileSize } from '../utils/helpers';
 import { Upload, Eye, Brain, Loader } from 'lucide-react';
-import { config } from '../config/environment';
 import { useTensorFlow } from '../hooks/useTensorFlow';
 
 interface ModelTestFormProps {
@@ -16,7 +14,7 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState<ProcessingResult | null>(null);
   const [processedImageUrl, setProcessedImageUrl] = useState<string>('');
-  const [useTensorFlow, setUseTensorFlow] = useState(true);
+  const [useTensorFlowJS, setUseTensorFlowJS] = useState(true);
   
   // TensorFlow hook
   const {
@@ -53,7 +51,7 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
     setProcessedImageUrl('');
 
     try {
-      if (useTensorFlow && isModelReady) {
+      if (useTensorFlowJS && isModelReady) {
         // Use TensorFlow.js for processing
         console.log('🧠 Processing with TensorFlow.js...');
         const tfResult = await tfProcessImage(selectedFile);
@@ -72,27 +70,9 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
         onNotification('Imagen procesada con TensorFlow.js!', 'success');
         
       } else {
-        // Fallback to backend processing
-        console.log('🔄 Processing with backend...');
-        const formData = new FormData();
-        formData.append('imagen', selectedFile);
-        formData.append('empresa', 'TEST');
-        formData.append('fundo', 'TEST');
-        formData.append('sector', 'TEST');
-        formData.append('lote', 'TEST');
-        formData.append('hilera', 'TEST');
-        formData.append('numero_planta', 'TEST');
-
-        const result = await apiService.testModel(formData);
-        setResult(result);
-        
-        if (result.success && result.image_name) {
-          const processedUrl = `${config.apiUrl}/resultados/${result.image_name}`;
-          setProcessedImageUrl(processedUrl);
-          onNotification('Imagen procesada exitosamente!', 'success');
-        } else {
-          onNotification(result.error || 'Error al procesar la imagen', 'error');
-        }
+        // TensorFlow.js no está listo
+        onNotification('TensorFlow.js no está listo. Espera a que se inicialice completamente.', 'warning');
+        return;
       }
     } catch (error: any) {
       console.error('Error processing image:', error);
@@ -120,8 +100,8 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={useTensorFlow}
-                onChange={(e) => setUseTensorFlow(e.target.checked)}
+                checked={useTensorFlowJS}
+                onChange={(e) => setUseTensorFlowJS(e.target.checked)}
                 className="mr-2"
                 disabled={!isModelReady}
               />
@@ -204,7 +184,7 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
             onClick={handleProcessImage}
             disabled={!selectedFile || processing}
             className={`inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl shadow-sm text-white transition-all duration-200 ${
-              !selectedFile || processing || (useTensorFlow && !isModelReady)
+              !selectedFile || processing || (useTensorFlowJS && !isModelReady)
                 ? 'bg-dark-600 cursor-not-allowed'
                 : 'bg-gradient-to-r from-accent-600 to-accent-700 hover:from-accent-700 hover:to-accent-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-accent-500 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
             }`}
@@ -212,11 +192,11 @@ const ModelTestForm: React.FC<ModelTestFormProps> = ({ onNotification }) => {
             {processing ? (
               <Loader className="h-5 w-5 mr-3 animate-spin" />
             ) : (
-              useTensorFlow ? <Brain className="h-5 w-5 mr-3" /> : <Eye className="h-5 w-5 mr-3" />
+              useTensorFlowJS ? <Brain className="h-5 w-5 mr-3" /> : <Eye className="h-5 w-5 mr-3" />
             )}
             {processing ? 
-              (useTensorFlow ? 'Procesando con TensorFlow.js...' : 'Procesando...') : 
-              (useTensorFlow ? 'Procesar con TensorFlow.js' : 'Procesar Imagen')
+              (useTensorFlowJS ? 'Procesando con TensorFlow.js...' : 'Procesando...') : 
+              (useTensorFlowJS ? 'Procesar con TensorFlow.js' : 'Procesar Imagen')
             }
           </button>
         </div>

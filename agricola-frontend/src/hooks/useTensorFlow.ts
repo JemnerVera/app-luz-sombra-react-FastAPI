@@ -11,7 +11,7 @@ export interface UseTensorFlowReturn {
   dispose: () => void;
 }
 
-export const useTensorFlow = (): UseTensorFlowReturn => {
+const useTensorFlowHook = (): UseTensorFlowReturn => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isModelReady, setIsModelReady] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -112,15 +112,28 @@ export const useTensorFlow = (): UseTensorFlowReturn => {
     setIsInitialized(false);
   }, []);
 
-  // Auto-initialize on mount
+  // Auto-initialize on mount (only once)
   useEffect(() => {
-    initialize();
+    let mounted = true;
+    
+    const init = async () => {
+      if (!isInitialized && mounted) {
+        try {
+          await initialize();
+        } catch (error) {
+          console.error('Failed to initialize TensorFlow:', error);
+        }
+      }
+    };
+    
+    init();
     
     // Cleanup on unmount
     return () => {
+      mounted = false;
       dispose();
     };
-  }, [initialize, dispose]);
+  }, []); // Empty dependency array to run only once
 
   return {
     isInitialized,
@@ -132,3 +145,5 @@ export const useTensorFlow = (): UseTensorFlowReturn => {
     dispose
   };
 };
+
+export { useTensorFlowHook as useTensorFlow };

@@ -42,6 +42,7 @@ export interface ProcessingResult {
   longitud?: number;
   error?: string;
   message?: string;
+  processed_image?: string;
 }
 
 export interface HistoryRecord {

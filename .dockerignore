@@ -1,0 +1,45 @@
+# Entornos virtuales
+venv/
+venv_render/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Archivos de desarrollo
+.git/
+.gitignore
+README.md
+DEPLOY_GUIDE.md
+DEPLOYMENT_GUIDE.md
+GOOGLE_SHEETS_SETUP.md
+
+# Archivos de Node.js (ya están compilados)
+agricola-frontend/node_modules/
+agricola-frontend/src/
+agricola-frontend/public/
+agricola-frontend/package.json
+agricola-frontend/package-lock.json
+agricola-frontend/tailwind.config.js
+agricola-frontend/tsconfig.json
+
+# Archivos de entrenamiento (no necesarios en producción)
+dataset/
+retrain_model.py
+retrain_model_render.py
+create_*.py
+
+# Archivos de resultados
+resultados/
+
+# Archivos de configuración local
+start_*.bat
+token.json
+credentials.json
+*.key
+*.pem
+
+# Archivos temporales
+*.log
+*.tmp

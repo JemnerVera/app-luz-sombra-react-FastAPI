@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "10000:10000"
+    environment:
+      - PYTHONPATH=/app
+      - PORT=10000
+    volumes:
+      # Solo montar archivos necesarios para desarrollo
+      - ./agricola-frontend/build:/app/agricola-frontend/build:ro
+    restart: unless-stopped
+
